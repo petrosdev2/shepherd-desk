@@ -26,9 +26,10 @@ export default function Home() {
       setStage('app');
       if (appStarted || started.current) return;
       started.current = true; appStarted = true;
-      const { data: church } = await supabase.from('churches').select('name, join_code').eq('id', profile.church_id).maybeSingle();
+      const { data: church } = await supabase.from('churches').select('name, join_code, form_token').eq('id', profile.church_id).maybeSingle();
       if (!active) return;
       const store = createStore({ supabase, churchId: profile.church_id, user: s.user, profile, church, onSignOut: () => window.location.reload() });
+      window.__QR = async text => (await import('qrcode')).toDataURL(text, { width: 440, margin: 1, color: { dark: '#0B6E4F', light: '#FFFFFF' } });
       setTimeout(() => startApp(store), 0);
     };
 
