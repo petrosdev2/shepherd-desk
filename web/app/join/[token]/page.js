@@ -8,6 +8,8 @@ const STATUS = [
 ];
 
 const BLANK = { kind: 'member', first: '', last: '', phone: '', gender: '', dob: '', address: '', marital: '', occupation: '', dept: '', invitedBy: '', branchId: '', photo: '' };
+const BLANK_KID = { first: '', last: '', gender: '', dob: '', allergy: '', photo: '' };
+const MAX_KIDS = 8;
 
 // Shrink in the browser so a phone photo uploads in seconds on mobile data.
 function shrink(file, max = 640) {
@@ -32,10 +34,12 @@ export default function Join({ params }) {
   const [info, setInfo] = useState(undefined); // undefined = loading, null = bad link
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [shot, setShot] = useState(''); // local preview
-  const [upl, setUpl] = useState(false);
+  const [shot, setShot] = useState('');        // local preview of the adult photo
+  const [kidShots, setKidShots] = useState([]);
+  const [upl, setUpl] = useState(0);           // how many uploads are in flight
   const [err, setErr] = useState('');
   const [f, setF] = useState(BLANK);
+  const [kids, setKids] = useState([]);
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -44,25 +48,37 @@ export default function Join({ params }) {
   }, [token]);
 
   const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
+  const setKid = (i, k, v) => setKids(prev => prev.map((kid, j) => j === i ? { ...kid, [k]: v } : kid));
 
-  const pickPhoto = async e => {
+  const reset = () => { setF(BLANK); setKids([]); setShot(''); setKidShots([]); };
+
+  const addKid = () => { setKids(prev => prev.length >= MAX_KIDS ? prev : [...prev, { ...BLANK_KID }]); setKidShots(prev => [...prev, '']); };
+  const dropKid = i => { setKids(prev => prev.filter((_, j) => j !== i)); setKidShots(prev => prev.filter((_, j) => j !== i)); };
+
+  // Shrink, upload, and hand back the public URL plus a local preview.
+  const upload = async file => {
+    const blob = await shrink(file);
+    const supabase = getSupabase(); if (!supabase) throw new Error('Not connected.');
+    const name = `signups/${token}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.jpg`;
+    const { error } = await supabase.storage.from('member-photos').upload(name, blob, { contentType: 'image/jpeg', upsert: false });
+    if (error) throw error;
+    const { data } = supabase.storage.from('member-photos').getPublicUrl(name);
+    return { url: data.publicUrl, preview: URL.createObjectURL(blob) };
+  };
+
+  const pickPhoto = async (e, kidIndex) => {
     const file = e.target.files && e.target.files[0];
     e.target.value = '';
     if (!file) return;
-    setErr(''); setUpl(true);
+    setErr(''); setUpl(n => n + 1);
     try {
-      const blob = await shrink(file);
-      const supabase = getSupabase(); if (!supabase) throw new Error('Not connected.');
-      const name = `signups/${token}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.jpg`;
-      const { error } = await supabase.storage.from('member-photos').upload(name, blob, { contentType: 'image/jpeg', upsert: false });
-      if (error) throw error;
-      const { data } = supabase.storage.from('member-photos').getPublicUrl(name);
-      set('photo', data.publicUrl);
-      setShot(URL.createObjectURL(blob));
+      const { url, preview } = await upload(file);
+      if (kidIndex == null) { set('photo', url); setShot(preview); }
+      else { setKid(kidIndex, 'photo', url); setKidShots(prev => prev.map((p, j) => j === kidIndex ? preview : p)); }
     } catch (e2) {
       setErr('Photo did not upload: ' + (e2.message || 'please try again.'));
     }
-    setUpl(false);
+    setUpl(n => n - 1);
   };
 
   const submit = async e => {
@@ -70,10 +86,18 @@ export default function Join({ params }) {
     if (!f.first.trim()) return setErr('Please enter your first name.');
     if (!f.phone.trim()) return setErr('Please enter a phone number we can reach you on.');
     if ((info.branches || []).length > 1 && !f.branchId) return setErr('Please choose the expression you attend.');
-    if (upl) return setErr('Your photo is still uploading — one moment.');
+    const named = kids.filter(k => k.first.trim());
+    if (kids.length && named.length !== kids.length) return setErr('Please give each child a first name, or remove the empty one.');
+    if (upl) return setErr('A photo is still uploading — one moment.');
     const supabase = getSupabase(); if (!supabase) return;
     setBusy(true);
-    const { error } = await supabase.rpc('submit_signup', { p_token: token, p_data: { ...f, first: f.first.trim(), last: f.last.trim(), phone: f.phone.trim(), branchName: ((info.branches || []).find(b => b.id === f.branchId) || {}).name || '', submittedAt: new Date().toISOString() } });
+    const payload = {
+      ...f, first: f.first.trim(), last: f.last.trim(), phone: f.phone.trim(),
+      branchName: ((info.branches || []).find(b => b.id === f.branchId) || {}).name || '',
+      children: named.map(k => ({ ...k, first: k.first.trim(), last: k.last.trim() })),
+      submittedAt: new Date().toISOString()
+    };
+    const { error } = await supabase.rpc('submit_signup', { p_token: token, p_data: payload });
     setBusy(false);
     if (error) { setErr(error.message); return; }
     setSent(true);
@@ -90,11 +114,9 @@ export default function Join({ params }) {
   if (sent) return (
     <Frame title="Thank you!" church={info.name}>
       <p className="lead">Your details have reached the church office. Someone will be in touch, and you’ll be added to the register shortly.</p>
-      <button className="btn" onClick={() => { setSent(false); setF(BLANK); setShot(''); }} style={{ justifyContent: 'center' }}>Register someone else</button>
+      <button className="btn" onClick={() => { setSent(false); reset(); }} style={{ justifyContent: 'center' }}>Register someone else</button>
     </Frame>
   );
-
-  const initials = ((f.first || '?')[0] || '').toUpperCase() + ((f.last || '')[0] || '').toUpperCase();
 
   return (
     <Frame title="Church registration" church={info.name} lead="It takes about a minute. Only your name and phone number are required.">
@@ -120,16 +142,14 @@ export default function Join({ params }) {
         <div className="field">
           <span className="lbl">Your photo</span>
           <div className="photo-pick">
-            {shot
-              ? <span className="avatar has-photo" style={{ width: 64, height: 64 }}><img src={shot} alt="" /></span>
-              : <span className="avatar" style={{ width: 64, height: 64, fontSize: 20 }}>{initials}</span>}
+            <Face src={shot} name={f.first} last={f.last} size={64} />
             <div>
-              <button type="button" className="btn" onClick={() => fileRef.current && fileRef.current.click()} disabled={upl}>
-                {upl ? 'Uploading…' : shot ? 'Change photo' : 'Take or choose a photo'}
+              <button type="button" className="btn" onClick={() => fileRef.current && fileRef.current.click()}>
+                {shot ? 'Change photo' : 'Take or choose a photo'}
               </button>
               <p className="note" style={{ margin: '6px 0 0' }}>Optional. It helps the pastors and unit heads put a face to your name.</p>
             </div>
-            <input ref={fileRef} type="file" accept="image/*" onChange={pickPhoto} />
+            <input ref={fileRef} type="file" accept="image/*" onChange={e => pickPhoto(e, null)} />
           </div>
         </div>
         <div className="form-grid">
@@ -148,12 +168,55 @@ export default function Join({ params }) {
         </div>
         <div className="field"><label htmlFor="address">Area / address</label><input className="input" id="address" value={f.address} onChange={e => set('address', e.target.value)} placeholder="e.g. Oka Road, Ondo" /></div>
         {f.kind === 'new' ? <div className="field"><label htmlFor="invitedBy">Who invited you?</label><input className="input" id="invitedBy" value={f.invitedBy} onChange={e => set('invitedBy', e.target.value)} /></div> : null}
+
+        <div className="field">
+          <span className="lbl">Your children</span>
+          <p className="note" style={{ margin: '0 0 10px' }}>
+            Add any children who come to church with you, so the children’s workers know them and can reach you.
+            Only add children you are the parent or guardian of.
+          </p>
+          {kids.map((k, i) => (
+            <div key={i} style={{ border: '1px solid var(--line)', borderRadius: 12, padding: '12px 12px 2px', margin: '0 0 10px' }}>
+              <div className="split">
+                <b>Child {i + 1}</b>
+                <button type="button" className="btn sm danger" onClick={() => dropKid(i)}>Remove</button>
+              </div>
+              <div className="photo-pick">
+                <Face src={kidShots[i]} name={k.first} last={k.last || f.last} size={52} />
+                <div>
+                  <button type="button" className="btn sm" onClick={() => { const el = document.getElementById('kid-photo-' + i); if (el) el.click(); }}>
+                    {kidShots[i] ? 'Change photo' : 'Add a photo'}
+                  </button>
+                </div>
+                <input id={'kid-photo-' + i} type="file" accept="image/*" onChange={e => pickPhoto(e, i)} />
+              </div>
+              <div className="form-grid">
+                <div className="field"><label htmlFor={'k-first-' + i}>First name *</label><input className="input" id={'k-first-' + i} value={k.first} onChange={e => setKid(i, 'first', e.target.value)} /></div>
+                <div className="field"><label htmlFor={'k-last-' + i}>Surname</label><input className="input" id={'k-last-' + i} value={k.last} onChange={e => setKid(i, 'last', e.target.value)} placeholder={f.last || 'Same as yours'} /></div>
+                <div className="field"><label htmlFor={'k-gender-' + i}>Gender</label><select className="input" id={'k-gender-' + i} value={k.gender} onChange={e => setKid(i, 'gender', e.target.value)}><option value="">—</option><option>Male</option><option>Female</option></select></div>
+                <div className="field"><label htmlFor={'k-dob-' + i}>Date of birth</label><input className="input" id={'k-dob-' + i} type="date" value={k.dob} onChange={e => setKid(i, 'dob', e.target.value)} /></div>
+              </div>
+              <div className="field"><label htmlFor={'k-allergy-' + i}>Allergy or special care</label><input className="input" id={'k-allergy-' + i} value={k.allergy} onChange={e => setKid(i, 'allergy', e.target.value)} placeholder="e.g. asthma, peanut allergy — leave blank if none" /></div>
+            </div>
+          ))}
+          {kids.length < MAX_KIDS
+            ? <button type="button" className="btn" onClick={addKid}>{kids.length ? 'Add another child' : 'Add a child'}</button>
+            : <p className="note" style={{ margin: 0 }}>That’s the most you can add here. Tell the church office about any others.</p>}
+        </div>
+
         {err ? <p className="err">{err}</p> : null}
-        <button className="btn primary" type="submit" disabled={busy || upl} style={{ justifyContent: 'center' }}>{busy ? 'Sending…' : 'Submit my details'}</button>
-        <p className="note">Your details go only to {info.name}’s church office and are used to keep in touch with you. You can ask them to remove your record at any time.</p>
+        <button className="btn primary" type="submit" disabled={busy || !!upl} style={{ justifyContent: 'center' }}>{busy ? 'Sending…' : upl ? 'Uploading photo…' : 'Submit my details'}</button>
+        <p className="note">Your details go only to {info.name}’s church office and are used to keep in touch with you and your family. You can ask them to remove your record, or your child’s, at any time.</p>
       </form>
     </Frame>
   );
+}
+
+function Face({ src, name, last, size }) {
+  const initials = ((name || '?')[0] || '').toUpperCase() + ((last || '')[0] || '').toUpperCase();
+  return src
+    ? <span className="avatar has-photo" style={{ width: size, height: size }}><img src={src} alt="" /></span>
+    : <span className="avatar" style={{ width: size, height: size, fontSize: Math.round(size * 0.32) }}>{initials}</span>;
 }
 
 function Frame({ title, church, lead, children }) {
