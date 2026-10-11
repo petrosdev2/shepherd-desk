@@ -1,0 +1,10 @@
+node_modules/
+.next/
+build/
+shots/
+seed/docs/
+seed/batch*.json
+.env
+.env.local
+.DS_Store
+*.log

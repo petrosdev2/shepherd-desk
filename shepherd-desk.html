@@ -1,0 +1,1498 @@
+<title>Shepherd Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#F2F5F3;--surface:#FFFFFF;--surface-2:#EBF0ED;--ink:#14201A;--ink-2:#46564E;--ink-3:#77867F;--line:#DAE2DD;
+  --accent:#0B6E4F;--accent-ink:#FFFFFF;--accent-soft:#DCEFE6;--gold:#A87A1F;--gold-soft:#F5EAD2;
+  --ok:#15803D;--warn:#B45309;--warn-soft:#FCEFDC;--bad:#B42318;--bad-soft:#FBE3DF;
+  --shadow:0 1px 2px rgba(14,32,24,.06),0 10px 30px rgba(14,32,24,.10);
+  --font:'Public Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --display:'Bricolage Grotesque','Public Sans',system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1310;--surface:#141C18;--surface-2:#1B2520;--ink:#E3EBE7;--ink-2:#A8B7B0;--ink-3:#7A8A83;--line:#25322C;
+    --accent:#3BBE8E;--accent-ink:#04130D;--accent-soft:#15332A;--gold:#DDAE52;--gold-soft:#322817;
+    --ok:#4ADE80;--warn:#F2A650;--warn-soft:#382714;--bad:#F2786C;--bad-soft:#3A1C19;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1310;--surface:#141C18;--surface-2:#1B2520;--ink:#E3EBE7;--ink-2:#A8B7B0;--ink-3:#7A8A83;--line:#25322C;
+  --accent:#3BBE8E;--accent-ink:#04130D;--accent-soft:#15332A;--gold:#DDAE52;--gold-soft:#322817;
+  --ok:#4ADE80;--warn:#F2A650;--warn-soft:#382714;--bad:#F2786C;--bad-soft:#3A1C19;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+.app{display:grid;grid-template-columns:244px minmax(0,1fr);min-height:100%}
+.side{position:sticky;top:0;height:100dvh;overflow-y:auto;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:18px;padding:18px 12px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
+.brand .mark{width:34px;height:34px;border-radius:9px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.brand b{font-family:var(--display);font-size:17px;display:block;line-height:1.1}
+.brand small{color:var(--ink-3);font-size:12px;display:block;line-height:1.3}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:10px;background:none;border:0;border-radius:8px;padding:9px 10px;text-align:left;cursor:pointer;color:var(--ink-2);font-weight:500}
+.nav button:hover{background:var(--surface-2);color:var(--ink)}
+.nav button.on{background:var(--accent-soft);color:var(--accent);font-weight:650}
+.nav .lock{margin-left:auto;color:var(--ink-3);display:flex}
+.side-foot{margin-top:auto;padding:12px 8px 0;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3);display:flex;flex-direction:column;gap:6px}
+.main{min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:10px 24px;flex-wrap:wrap}
+.top .title{font-weight:650;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top .right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.inline-field{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-3);font-weight:600}
+.content{padding:24px;max-width:1240px;width:100%}
+.top .menu-btn{display:none}
+.side-scrim{display:none}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;left:0;top:0;bottom:0;width:272px;height:auto;z-index:40;transform:translateX(-100%);transition:transform .2s ease;padding-top:calc(18px + env(safe-area-inset-top,0px))}
+  .app.nav-open .side{transform:none;box-shadow:var(--shadow)}
+  .app.nav-open .side-scrim{display:block;position:fixed;inset:0;background:rgba(8,16,12,.4);z-index:35}
+  .top .menu-btn{display:inline-flex}
+  .content{padding:16px}
+  .top{padding:10px 16px}
+}
+h1.page{font-family:var(--display);font-size:27px;line-height:1.15;margin:0;letter-spacing:-.015em;text-wrap:balance}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.page-head .actions{display:flex;gap:8px;flex-wrap:wrap}
+.sub{color:var(--ink-2);margin:4px 0 0}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none;color:var(--ink);line-height:1.3}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;gap:16px}
+.gap{margin-top:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+.cols-2{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.cols-3{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;min-width:0}
+.panel h2{font-family:var(--display);font-size:16px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.panel h2 .muted{font-family:var(--font);font-size:12px;font-weight:500}
+.kpi{display:flex;flex-direction:column;gap:2px}
+.kpi .label{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);font-weight:650}
+.kpi .val{font-family:var(--display);font-size:30px;line-height:1.15;font-variant-numeric:tabular-nums;margin-top:4px}
+.kpi .delta{font-size:13px;color:var(--ink-2)}
+.up{color:var(--ok)}.down{color:var(--bad)}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:650;padding:2px 9px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);white-space:nowrap;line-height:1.6}
+.pill.ok{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.accent{background:var(--accent-soft);color:var(--accent)}
+.pill.gold{background:var(--gold-soft);color:var(--gold)}
+.table-wrap{overflow-x:auto;margin:0 -18px;padding:0 18px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);font-weight:650;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--surface-2)}
+.num{text-align:right;white-space:nowrap}
+.sel-cell{width:36px;padding-right:0;cursor:pointer}
+.row-actions{width:1%}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.input{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px;min-width:0;width:100%}
+select.input{width:auto;max-width:100%}
+.toolbar .input{width:auto}
+.search{flex:1 1 220px}
+.toolbar .search{width:auto}
+textarea.input{resize:vertical;min-height:84px;line-height:1.45}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field>label,.field>.lbl{font-size:12px;font-weight:650;color:var(--ink-2)}
+.field select.input{width:100%}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
+.checks{display:flex;flex-wrap:wrap;gap:6px 14px}
+.checks label{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+input[type=checkbox],input[type=radio]{width:17px;height:17px;accent-color:var(--accent);flex:none}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.who b{font-weight:600}
+.who small{display:block;color:var(--ink-3);font-size:12px}
+.list{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.row:last-child{border-bottom:0}
+.row .grow{flex:1 1 160px;min-width:0}
+.muted{color:var(--ink-3)}
+.small{font-size:12.5px}
+.banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--gold-soft);border:1px solid color-mix(in srgb,var(--gold) 30%,transparent);border-radius:10px;padding:10px 14px;margin-bottom:16px}
+.banner .grow{flex:1 1 240px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px;font-weight:650;color:var(--ink-2);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab.on{color:var(--accent);border-color:var(--accent)}
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(236px,1fr);gap:12px;overflow-x:auto;padding-bottom:8px}
+.col{background:var(--surface-2);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:140px}
+.col h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2);margin:2px 4px 4px;display:flex;justify-content:space-between;align-items:center}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;text-align:left}
+.card:hover{border-color:var(--ink-3)}
+.card .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--ink-3)}
+.card-foot{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart text{fill:var(--ink-3);font-size:11px;font-family:var(--font)}
+.chart .val-label{fill:var(--ink);font-weight:700;font-size:12px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--ink-2);margin-bottom:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.hbar{display:grid;grid-template-columns:minmax(80px,140px) 1fr auto;gap:10px;align-items:center;padding:5px 0;font-size:13px}
+.hbar .track{height:10px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+.hbar .fill{height:100%;background:var(--accent);border-radius:5px}
+.hbar .v{font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+#modal-root{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px}
+.scrim{position:absolute;inset:0;background:rgba(8,16,12,.45)}
+.modal{position:relative;background:var(--surface);border-radius:14px;width:min(580px,100%);max-height:min(90dvh,920px);overflow:auto;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.modal.wide{width:min(860px,100%)}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:2}
+.modal-head h2{font-family:var(--display);font-size:19px;margin:0}
+.modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--surface);flex-wrap:wrap;z-index:2}
+.modal-foot .left{margin-right:auto}
+.err{color:var(--bad);font-weight:600;font-size:13px}
+.err:empty{display:none}
+#toasts{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:16px;left:16px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:60;pointer-events:none}
+.toast{background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:8px;font-weight:550;box-shadow:var(--shadow);max-width:420px}
+.toast.bad{background:var(--bad);color:#fff}
+.code-big{font-family:var(--display);font-size:46px;letter-spacing:.24em;text-align:center;padding:12px;background:var(--accent-soft);color:var(--accent);border-radius:12px;font-variant-numeric:tabular-nums}
+.check-list{max-height:46dvh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.check-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.check-row:last-child{border-bottom:0}
+.check-row:hover{background:var(--surface-2)}
+.check-row .grow{flex:1;min-width:0}
+.plan-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))}
+.plan{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.plan.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.plan h3{font-family:var(--display);font-size:17px;margin:0;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.plan ul{margin:0;padding-left:18px;color:var(--ink-2);font-size:13px;display:flex;flex-direction:column;gap:2px}
+.plan .btn{margin-top:auto;justify-content:center}
+.fam-label{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);font-weight:650;margin:18px 0 8px}
+.meter{height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.meter>i{display:block;height:100%;background:var(--accent)}
+.meter.warn>i{background:var(--warn)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:var(--surface);padding:7px 12px;font-weight:650;cursor:pointer;color:var(--ink-2)}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.denoms{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px}
+.denom{display:flex;flex-direction:column;gap:4px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.denom b{font-variant-numeric:tabular-nums}
+.denom small{color:var(--ink-3);font-variant-numeric:tabular-nums}
+.total-line{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--display);font-size:22px;padding:10px 0;border-top:1px solid var(--line)}
+.upsell{display:flex;flex-direction:column;align-items:flex-start;gap:10px;max-width:560px}
+.upsell .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--gold-soft);color:var(--gold)}
+.setup-wrap{min-height:100%;display:grid;place-items:center;padding-block:32px;padding-inline:16px}
+.setup{width:min(560px,100%);display:flex;flex-direction:column;gap:18px}
+.choice{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;background:var(--surface)}
+.choice:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.choice b{display:block}
+.choice span{color:var(--ink-2);font-size:13px}
+.kids{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:12px}
+.kid{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;background:var(--surface)}
+.kid .code{font-family:var(--display);letter-spacing:.14em;color:var(--ink-3)}
+.timeline{display:flex;flex-direction:column;gap:8px}
+.timeline .note{border-left:2px solid var(--line);padding:2px 0 2px 10px}
+.timeline .note small{color:var(--ink-3);display:block}
+.empty{padding:22px;text-align:center;color:var(--ink-3);border:1px dashed var(--line);border-radius:10px}
+.loading{min-height:60vh;display:grid;place-items:center;color:var(--ink-3)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.split{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.dl{display:grid;grid-template-columns:minmax(110px,max-content) 1fr;gap:6px 14px;margin:0}
+.dl dt{color:var(--ink-3);font-size:12.5px;font-weight:600}
+.dl dd{margin:0;min-width:0;overflow-wrap:anywhere}
+@media (max-width:640px){.hide-sm{display:none}.kpi .val{font-size:25px}h1.page{font-size:23px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.bulk{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:3;box-shadow:var(--shadow)}
+</style>
+<div id="app"></div><div id="modal-root" hidden></div><div id="toasts" aria-live="polite"></div>
+<script>
+'use strict';
+/* ---------- Basics ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const clone = o => JSON.parse(JSON.stringify(o ?? null));
+const pad = n => String(n).padStart(2, '0');
+const isoDate = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const today = () => isoDate(new Date());
+const addDays = (s, n) => { const d = new Date(s + 'T00:00'); d.setDate(d.getDate() + n); return isoDate(d); };
+const daysBetween = (a, b) => Math.round((new Date(b + 'T00:00') - new Date(a + 'T00:00')) / 864e5);
+const monthOf = d => (d || '').slice(0, 7);
+const thisMonth = () => monthOf(today());
+const shiftMonth = (m, n) => { const d = new Date(m + '-01T00:00'); d.setMonth(d.getMonth() + n); return d.getFullYear() + '-' + pad(d.getMonth() + 1); };
+const lastMonths = n => { const out = []; for (let i = n - 1; i >= 0; i--) out.push(shiftMonth(thisMonth(), -i)); return out; };
+const fmtDate = s => s ? new Date(s + 'T00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+const fmtShort = s => s ? new Date(s + 'T00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—';
+const monthLabel = (m, withYear) => new Date(m + '-01T00:00').toLocaleDateString('en-GB', withYear ? { month: 'long', year: 'numeric' } : { month: 'short' });
+const fmtTime = iso => iso ? new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
+const naira = n => '₦' + Math.round(+n || 0).toLocaleString('en-NG');
+const num = n => Math.round(+n || 0).toLocaleString('en-NG');
+const compact = v => v >= 1e6 ? (v / 1e6).toFixed(v >= 1e7 ? 0 : 1).replace(/\.0$/, '') + 'M' : v >= 1e3 ? (v / 1e3).toFixed(v >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'k' : String(Math.round(v));
+const sum = (arr, f = x => x.amount) => arr.reduce((a, x) => a + (+f(x) || 0), 0);
+const byDateDesc = (a, b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || '').localeCompare(a.createdAt || '');
+
+/* ---------- Icons ---------- */
+const IC = {
+  home: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
+  users: 'M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M22 20v-1a4 4 0 0 0-3-3.9M16 4.1a3.5 3.5 0 0 1 0 6.8',
+  check: 'M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9',
+  spark: 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6',
+  cash: 'M3 6h18v12H3zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M6.5 9.5v.01M17.5 14.5v.01',
+  chat: 'M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z',
+  child: 'M12 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6M7 22v-6l-2-4 7 1 7-1-2 4v6M10 22v-4h4v4',
+  chart: 'M4 20V11M10 20V4M16 20v-7M22 20H2',
+  branch: 'M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6M18 9a9 9 0 0 1-9 9',
+  gear: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
+  plus: 'M12 5v14M5 12h14', menu: 'M3 6h18M3 12h18M3 18h18', x: 'M18 6L6 18M6 6l12 12',
+  lock: 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4', download: 'M12 3v12M7 10l5 5 5-5M5 21h14', upload: 'M12 16V4M7 9l5-5 5 5M5 21h14',
+  copy: 'M9 9h11v11H9zM5 15H4V4h11v1', arrow: 'M5 12h14M13 6l6 6-6 6', alert: 'M12 9v4M12 17v.01M10.3 3.9L2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+  cake: 'M4 21h16v-8H4zM4 16c2 1.5 4 1.5 6 0s4-1.5 6 0 3 1.5 4 0M12 13V9M12 6a1.5 1.5 0 0 0 1.5-1.5C13.5 3.5 12 2 12 2s-1.5 1.5-1.5 2.5A1.5 1.5 0 0 0 12 6',
+  crook: 'M9 22V9a5 5 0 0 1 10 0v1.5a2.5 2.5 0 0 1-5 0'
+};
+const icon = (n, s = 18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[n]}"/></svg>`;
+
+/* ---------- Domain constants ---------- */
+const STATUSES = ['First-timer', 'Regular attender', 'Member', 'Worker', 'Minister', 'Inactive', 'Relocated', 'Deceased'];
+const ACTIVE = ['Regular attender', 'Member', 'Worker', 'Minister'];
+const GONE = ['Relocated', 'Deceased'];
+const STAGES = ['First visit', 'Contacted', 'Second visit', 'Membership class', 'Member', 'Department'];
+const METHODS = ['Cash', 'Bank transfer', 'POS', 'Online (Paystack)', 'USSD'];
+const KID_CLASSES = ['Crèche (0–2)', 'Beginners (3–5)', 'Juniors (6–9)', 'Pre-teens (10–12)'];
+const DENOMS = [1000, 500, 200, 100, 50, 20, 10, 5];
+const COLS = ['settings', 'members', 'services', 'income', 'expenses', 'counts', 'messages', 'checkins', 'branches', 'remits', 'audit'];
+
+const DEFAULT_SETTINGS = {
+  name: 'Your church', mainBranch: 'Main church', address: '', pastor: '', plan: 'starter', multiBranch: false,
+  serviceTypes: ['Sunday Service', 'Midweek Service', 'Prayer Meeting', 'Special Programme'],
+  departments: ['Choir', 'Ushers', 'Media', 'Children', 'Protocol', 'Prayer', 'Sanctuary', 'Evangelism', 'Welfare'],
+  incomeCats: ['Tithe', 'Offering', 'Thanksgiving', 'Seed', 'Building Fund', 'Pledge', 'Project Levy'],
+  expenseCats: ['Utilities', 'Fuel & Generator', 'Welfare', 'Media & Equipment', 'Maintenance', 'Programmes', 'Honorarium', 'Remittance to HQ', 'Other'],
+  remitRates: { Tithe: 10, Offering: 10 },
+  team: [],
+  templates: {
+    birthday: 'Happy birthday, {first_name}! The whole {church} family celebrates you today. May this new year bring you favour, good health and great joy.',
+    welcome: 'Hello {first_name}, thank you for worshipping with us at {church}. We were glad to have you, and we would love to see you again this Sunday. God bless you.',
+    missed: 'Hello {first_name}, we have missed you at {church} these past weeks. We hope all is well with you and your family. Is there anything we can pray with you about?',
+    announcement: 'Dear {first_name}, this is a reminder from {church}: '
+  }
+};
+const TEMPLATE_NAMES = { birthday: 'Birthday wish', welcome: 'Welcome a first-timer', missed: 'We missed you', announcement: 'Announcement' };
+
+const FEATS = {
+  starter: [],
+  basic: ['expenses', 'counts', 'reports', 'comms', 'import'],
+  standard: ['expenses', 'counts', 'reports', 'comms', 'import', 'bulk', 'children', 'roles', 'online'],
+  premium: ['expenses', 'counts', 'reports', 'comms', 'import', 'bulk', 'children', 'roles', 'online', 'audit', 'webpage'],
+};
+const PLANS = {
+  starter: { name: 'Starter', fam: 'single', price: 'Free', limit: 100, admins: 1, feats: FEATS.starter, blurb: 'New churches and fellowships',
+    points: ['Up to 100 members', 'Member records & attendance', 'First-timer follow-up', 'Basic giving records', '1 admin user'] },
+  basic: { name: 'Basic', fam: 'single', price: 'Price TBD', limit: 300, admins: 3, feats: FEATS.basic, blurb: 'Small churches',
+    points: ['Up to 300 members', 'Everything in Starter', 'Expenses & offering counts', 'Birthday messages & reports', 'Excel import', '3 admin users'] },
+  standard: { name: 'Standard', fam: 'single', price: 'Price TBD', limit: 1000, admins: 10, feats: FEATS.standard, blurb: 'Growing churches',
+    points: ['Up to 1,000 members', 'Everything in Basic', 'Bulk WhatsApp/SMS', "Children's check-in", 'Online giving', 'Custom roles, 10 admins'] },
+  premium: { name: 'Premium', fam: 'single', price: 'Price TBD', limit: Infinity, admins: Infinity, feats: FEATS.premium, blurb: 'Large single churches',
+    points: ['Unlimited members & admins', 'Everything in Standard', 'Audit log', 'Church webpage & member app', 'Priority support'] },
+  network: { name: 'Branch Network', fam: 'multi', price: 'Base + per branch', limit: Infinity, admins: Infinity, feats: [...FEATS.premium, 'branches'], blurb: '2–10 branches',
+    points: ['Everything in Premium, per branch', 'HQ dashboard', 'Branch remittance', 'Member & pastor transfers', 'Monthly branch returns'] },
+  enterprise: { name: 'Enterprise', fam: 'multi', price: 'Custom quote', limit: Infinity, admins: Infinity, feats: [...FEATS.premium, 'branches', 'zones'], blurb: 'Denominations, 10+ branches',
+    points: ['Everything in Branch Network', 'Zones & regions', 'Custom reports & branding', 'Dedicated onboarding'] }
+};
+const ROLES = {
+  admin: { label: 'Church Admin', nav: '*' },
+  pastor: { label: 'Pastor', nav: ['dashboard', 'members', 'attendance', 'followup', 'giving', 'comms', 'children', 'reports', 'branches'] },
+  finance: { label: 'Finance Secretary', nav: ['dashboard', 'giving', 'reports'] },
+  secretary: { label: 'Secretary', nav: ['dashboard', 'members', 'attendance', 'followup', 'comms', 'children', 'reports'] },
+  followup: { label: 'Follow-up Coordinator', nav: ['followup', 'members'] },
+  usher: { label: 'Usher / Check-in', nav: ['attendance', 'children'] }
+};
+const NAV = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'home' },
+  { id: 'members', label: 'Members', icon: 'users' },
+  { id: 'attendance', label: 'Attendance', icon: 'check' },
+  { id: 'followup', label: 'First-timers', icon: 'spark' },
+  { id: 'giving', label: 'Giving & finance', icon: 'cash' },
+  { id: 'comms', label: 'Messages', icon: 'chat', feat: 'comms' },
+  { id: 'children', label: "Children's check-in", icon: 'child', feat: 'children' },
+  { id: 'reports', label: 'Reports', icon: 'chart', feat: 'reports' },
+  { id: 'branches', label: 'Branches', icon: 'branch', multiOnly: true },
+  { id: 'settings', label: 'Settings', icon: 'gear', adminOnly: true }
+];
+
+/* ---------- UI state (per viewer) ---------- */
+const S = { route: 'dashboard', branch: 'all', role: 'admin', navOpen: false, q: '', fStatus: '', fDept: '', gTab: 'overview', gMonth: thisMonth(), period: '3', cAud: 'all', cTpl: 'announcement', cText: '', ready: false, sel: new Set() };
+const PREF_KEY = 'shepherd-desk-prefs';
+try { const p = JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); ['route', 'role', 'branch'].forEach(k => { if (p[k]) S[k] = p[k]; }); } catch (e) { /* storage unavailable */ }
+function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify({ route: S.route, role: S.role, branch: S.branch })); } catch (e) { /* ignore */ } }
+
+/* ---------- Data store (shared db when available, else this browser) ---------- */
+const D = {}; COLS.forEach(c => D[c] = {});
+let MODE = 'loading', DB = null;
+const LOCAL_KEY = 'shepherd-desk-local-v1';
+function loadLocal() { try { const j = JSON.parse(localStorage.getItem(LOCAL_KEY) || 'null'); if (j) COLS.forEach(c => D[c] = j[c] || {}); } catch (e) { /* ignore */ } }
+function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(D)); } catch (e) { /* ignore */ } }
+const writing = {};
+async function put(col, obj) {
+  if (!obj.id) obj.id = uid();
+  if (!obj.createdAt) obj.createdAt = new Date().toISOString();
+  const body = clone(obj);
+  D[col][obj.id] = body; scheduleRender();
+  if (DB) {
+    const key = col + '/' + obj.id;
+    const prev = writing[key] || Promise.resolve();
+    const run = prev.then(() => DB.collection(col).doc(obj.id).set(body)).catch(e => { toast(dbError(e), 'bad'); });
+    writing[key] = run; await run;
+  } else saveLocal();
+  return body;
+}
+async function del(col, id) {
+  delete D[col][id]; scheduleRender();
+  if (DB) { try { await DB.collection(col).doc(id).delete(); } catch (e) { toast(dbError(e), 'bad'); } } else saveLocal();
+}
+function dbError(e) {
+  const c = e && e.code;
+  if (c === 'quota_exceeded') return 'Storage is full for this prototype. Delete old records to add new ones.';
+  if (c === 'invalid_argument') return 'You don’t have permission to change records here.';
+  if (c === 'resource_exhausted') return 'Too many changes at once. Wait a moment and try again.';
+  return 'Couldn’t save that change. Check your connection and try again.';
+}
+const all = c => Object.values(D[c] || {});
+const ST = () => { const s = D.settings.church || {}; return { ...DEFAULT_SETTINGS, ...s, templates: { ...DEFAULT_SETTINGS.templates, ...(s.templates || {}) }, remitRates: { ...(s.remitRates || DEFAULT_SETTINGS.remitRates) } }; };
+async function saveSettings(patch) { const cur = clone(D.settings.church || {}); await put('settings', { ...cur, ...patch, id: 'church' }); }
+async function audit(action, detail) { if (!D.settings.church) return; put('audit', { at: new Date().toISOString(), role: S.role, action, detail }); }
+
+/* ---------- Plan, role, branch helpers ---------- */
+const plan = () => PLANS[ST().plan] || PLANS.starter;
+const has = f => plan().feats.includes(f);
+const planFor = f => Object.values(PLANS).find(p => p.feats.includes(f)) || PLANS.premium;
+const roleAllows = id => { const r = ROLES[S.role] || ROLES.admin; const n = NAV.find(x => x.id === id); if (n && n.adminOnly && S.role !== 'admin') return false; return r.nav === '*' || r.nav.includes(id); };
+const canFin = () => ['admin', 'finance'].includes(S.role);
+const canApprove = () => ['admin', 'pastor'].includes(S.role);
+const isMulti = () => !!ST().multiBranch && has('branches');
+function branches() { const st = ST(); return [{ id: 'main', name: st.mainBranch || 'Main church', location: st.address || '', pastor: st.pastor || '', hq: true }, ...all('branches').sort((a, b) => (a.name || '').localeCompare(b.name || ''))]; }
+const branchName = id => (branches().find(b => b.id === (id || 'main')) || { name: 'Unknown branch' }).name;
+const inBranch = r => !isMulti() || S.branch === 'all' || (r.branchId || 'main') === S.branch;
+const curBranchId = () => (isMulti() && S.branch !== 'all') ? S.branch : 'main';
+const scopeLabel = () => isMulti() ? (S.branch === 'all' ? 'All branches' : branchName(S.branch)) : ST().name;
+
+/* ---------- People helpers ---------- */
+const fullName = m => m ? ([m.first, m.last].filter(Boolean).join(' ') || 'Unnamed') : 'Unknown';
+const initials = m => (((m.first || '?')[0] || '') + ((m.last || '')[0] || '')).toUpperCase();
+const members = () => all('members').filter(inBranch);
+const statusTone = s => ({ 'First-timer': 'gold', Member: 'accent', Worker: 'accent', Minister: 'accent', Inactive: 'warn', Relocated: 'warn', Deceased: 'bad' }[s] || '');
+const pill = (t, tone = '') => `<span class="pill ${tone}">${esc(t)}</span>`;
+const who = (m, sub) => `<div class="who"><span class="avatar">${esc(initials(m))}</span><div style="min-width:0"><b>${esc(fullName(m))}</b>${sub ? `<small>${sub}</small>` : ''}</div></div>`;
+function intlPhone(p) { let d = String(p || '').replace(/\D/g, ''); if (!d) return ''; if (d.startsWith('0') && d.length === 11) d = '234' + d.slice(1); else if (d.length === 10) d = '234' + d; return d; }
+const waLink = (p, text) => { const n = intlPhone(p); return n ? `https://wa.me/${n}?text=${encodeURIComponent(text || '')}` : ''; };
+const waBtn = (p, text, label = 'WhatsApp') => { const u = waLink(p, text); return u ? `<a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener">${icon('chat', 15)} ${esc(label)}</a>` : ''; };
+function fillTpl(t, m) { const st = ST(); return String(t || '').replace(/\{first_name\}/g, (m && m.first) || 'friend').replace(/\{name\}/g, fullName(m)).replace(/\{church\}/g, st.name).replace(/\{pastor\}/g, st.pastor || 'our pastor'); }
+function lastSeenMap() { const map = {}; all('services').forEach(s => (s.present || []).forEach(id => { if (!map[id] || map[id] < s.date) map[id] = s.date; })); return map; }
+function absentees() {
+  const svc = all('services').filter(s => s.mode === 'names').sort(byDateDesc);
+  const out = []; const seen = lastSeenMap();
+  members().forEach(m => {
+    if (!ACTIVE.includes(m.status)) return;
+    const mine = svc.filter(s => (s.branchId || 'main') === (m.branchId || 'main') && (!m.joined || s.date >= m.joined)).slice(0, 3);
+    if (mine.length < 3) return;
+    if (mine.every(s => !(s.present || []).includes(m.id))) out.push({ m, last: seen[m.id] || null });
+  });
+  return out.sort((a, b) => (a.last || '').localeCompare(b.last || ''));
+}
+function celebrations(days = 14) {
+  const t = new Date(); t.setHours(0, 0, 0, 0); const out = [];
+  members().forEach(m => {
+    if (GONE.includes(m.status)) return;
+    [['dob', 'Birthday'], ['anniversary', 'Wedding anniversary']].forEach(([k, label]) => {
+      if (!m[k]) return; const [, mo, d] = m[k].split('-').map(Number); if (!mo || !d) return;
+      let n = new Date(t.getFullYear(), mo - 1, d); if (n < t) n = new Date(t.getFullYear() + 1, mo - 1, d);
+      const diff = Math.round((n - t) / 864e5); if (diff <= days) out.push({ m, label, diff, date: isoDate(n) });
+    });
+  });
+  return out.sort((a, b) => a.diff - b.diff);
+}
+const followDue = () => members().filter(m => m.followUp && !['Member', 'Department'].includes(m.followUp.stage) && m.followUp.due && m.followUp.due <= today());
+
+/* ---------- Toast, modal, copy, downloads ---------- */
+function toast(msg, tone) { const el = document.createElement('div'); el.className = 'toast ' + (tone || ''); el.textContent = msg; $('#toasts').appendChild(el); setTimeout(() => el.remove(), 3600); }
+function openModal(title, body, foot = '', opts = {}) {
+  const root = $('#modal-root');
+  root.innerHTML = `<div class="scrim" data-act="closeModal"></div><div class="modal ${opts.wide ? 'wide' : ''}" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+    <div class="modal-head"><h2>${esc(title)}</h2><button class="btn ghost sm" data-act="closeModal" aria-label="Close">${icon('x', 16)}</button></div>
+    <div class="modal-body">${body}</div>${foot ? `<div class="modal-foot">${foot}</div>` : ''}</div>`;
+  root.hidden = false;
+  const f = root.querySelector('.modal-body input:not([type=hidden]):not([type=checkbox]),.modal-body select,.modal-body textarea'); if (f && !opts.noFocus) f.focus();
+}
+function closeModal() { const r = $('#modal-root'); r.hidden = true; r.innerHTML = ''; }
+function formModal(name, title, body, submitLabel, opts = {}) {
+  openModal(title, `<form id="mf" data-form="${name}" novalidate class="stack">${body}<p class="err" id="mf-err"></p><button type="submit" hidden></button></form>`,
+    `${opts.left || ''}<button class="btn" data-act="closeModal">Cancel</button><button class="btn primary" data-act="submitModal">${esc(submitLabel)}</button>`, opts);
+}
+const formErr = msg => { const e = $('#mf-err'); if (e) e.textContent = msg; else toast(msg, 'bad'); };
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); toast('Copied'); }
+  catch (e) { const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (_) { /* ignore */ } ta.remove(); toast(ok ? 'Copied' : 'Select the text and copy it manually', ok ? '' : 'bad'); }
+}
+async function download(filename, text, mime = 'text/csv') {
+  let dl = null; try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+  if (!dl && typeof STORE !== 'undefined' && STORE) {
+    try {
+      const url = URL.createObjectURL(new Blob([text], { type: mime }));
+      const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000); toast('Downloaded ' + filename); return;
+    } catch (e) { /* fall through to the copy box */ }
+  }
+  if (!dl) { openModal('Copy your export', `<p class="muted">Downloads aren’t available here, so copy the data below and paste it into Excel or a text file named <b>${esc(filename)}</b>.</p><textarea class="input" rows="12" readonly id="exp-text">${esc(text)}</textarea>`, `<button class="btn primary" data-act="copyExport">${icon('copy', 15)} Copy</button>`); return; }
+  try { await dl.save({ filename, data: new Blob([text], { type: mime }) }); }
+  catch (e) { if (e && e.code && !['cancelled', 'declined', 'user_cancelled'].includes(e.code)) toast('The file wasn’t saved.', 'bad'); }
+}
+const csvCell = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+const toCSV = rows => rows.map(r => r.map(csvCell).join(',')).join('\n');
+function parseCSV(text) {
+  const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+    else if (c === '"') q = true; else if (c === ',') { row.push(cur); cur = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cur); rows.push(row); row = []; cur = ''; }
+    else cur += c;
+  }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim()));
+}
+
+/* ---------- Charts ---------- */
+function niceMax(v) { if (!(v > 0)) return 10; const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
+function lineChart(pts, { fmt = compact, label = 'Trend', h = 210 } = {}) {
+  if (pts.length < 2) return `<div class="empty">Record at least two services to see the trend.</div>`;
+  const W = 640, H = h, L = 40, R = 18, T = 22, B = 26;
+  const max = niceMax(Math.max(...pts.map(p => p.v)) * 1.08);
+  const x = i => L + i * (W - L - R) / (pts.length - 1); const y = v => T + (H - T - B) * (1 - v / max);
+  let g = '';
+  for (let k = 0; k <= 5; k++) { const v = max * k / 5; g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--line)" stroke-width="1"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${fmt(v)}</text>`; }
+  const step = Math.ceil(pts.length / 7);
+  pts.forEach((p, i) => { if (i % step === 0 || i === pts.length - 1) g += `<text x="${x(i)}" y="${H - 6}" text-anchor="middle">${esc(p.l)}</text>`; });
+  const d = pts.map((p, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.v).toFixed(1)).join(' ');
+  const area = d + ` L${x(pts.length - 1)} ${y(0)} L${x(0)} ${y(0)} Z`;
+  const lp = pts[pts.length - 1], li = pts.length - 1;
+  const dots = pts.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.v)}" r="${i === li ? 4.5 : 2.5}" style="fill:${i === li ? 'var(--accent)' : 'var(--surface)'};stroke:var(--accent)" stroke-width="2"><title>${esc(p.l)}: ${esc(fmt(p.v))}</title></circle>`).join('');
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${g}<path d="${area}" style="fill:var(--accent);opacity:.1"/><path d="${d}" style="fill:none;stroke:var(--accent)" stroke-width="2.4" stroke-linejoin="round"/>${dots}<text class="val-label" x="${x(li)}" y="${y(lp.v) - 10}" text-anchor="end">${esc(fmt(lp.v))}</text></svg></div>`;
+}
+function barChart(groups, series, { fmt = compact, label = 'Comparison', h = 210 } = {}) {
+  if (!groups.length) return `<div class="empty">No data yet.</div>`;
+  const W = 640, H = h, L = 44, R = 10, T = 14, B = 26;
+  const max = niceMax(Math.max(1, ...groups.flatMap(g => series.map(s => +g[s.key] || 0))) * 1.05);
+  const y = v => T + (H - T - B) * (1 - v / max); const gw = (W - L - R) / groups.length; const bw = Math.min(26, (gw - 12) / series.length);
+  let g = '';
+  for (let k = 0; k <= 5; k++) { const v = max * k / 5; g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" style="stroke:var(--line)"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${fmt(v)}</text>`; }
+  groups.forEach((gr, i) => {
+    const cx = L + gw * i + gw / 2; const start = cx - bw * series.length / 2;
+    series.forEach((s, j) => { const v = +gr[s.key] || 0; const top = y(v); g += `<rect x="${start + j * bw + 1}" y="${top}" width="${bw - 2}" height="${Math.max(0, y(0) - top)}" rx="3" style="fill:${s.color}"><title>${esc(gr.l)} · ${esc(s.label)}: ${esc(fmt(v))}</title></rect>`; });
+    g += `<text x="${cx}" y="${H - 6}" text-anchor="middle">${esc(gr.l)}</text>`;
+  });
+  const legend = series.length > 1 ? `<div class="legend">${series.map(s => `<span><i style="background:${s.color}"></i>${esc(s.label)}</span>`).join('')}</div>` : '';
+  return `${legend}<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${g}</svg></div>`;
+}
+function hbars(items, fmt = num) {
+  if (!items.length) return `<div class="empty">Nothing recorded for this period.</div>`;
+  const max = Math.max(...items.map(i => i.v), 1);
+  return items.map(i => `<div class="hbar"><span>${esc(i.l)}</span><div class="track"><div class="fill" style="width:${(i.v / max * 100).toFixed(1)}%"></div></div><span class="v">${esc(fmt(i.v))}</span></div>`).join('');
+}
+const kpi = (label, val, delta = '') => `<div class="panel kpi"><span class="label">${esc(label)}</span><span class="val">${val}</span><span class="delta">${delta}</span></div>`;
+function deltaText(cur, prev, unit = '') { if (!prev) return '<span class="muted">No earlier figure to compare</span>'; const d = cur - prev; const pct = Math.round(d / prev * 100); if (d === 0) return 'Same as before'; return `<span class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'} ${Math.abs(pct)}%</span> <span class="muted">vs ${unit}</span>`; }
+const emptyBox = (msg, btn = '') => `<div class="empty">${esc(msg)}${btn ? `<div style="margin-top:10px">${btn}</div>` : ''}</div>`;
+function gate(feat, title) {
+  const p = planFor(feat);
+  return `<div class="panel upsell"><span class="ic">${icon('lock', 22)}</span><h2 style="margin:0">${esc(title)} comes with the ${esc(p.name)} plan</h2>
+  <p class="muted" style="margin:0">Your church is on the ${esc(plan().name)} plan. Upgrading keeps all your records and switches this on straight away.</p>
+  ${S.role === 'admin' ? `<button class="btn primary" data-act="goto" data-route="settings">See plans</button>` : `<p class="small muted" style="margin:0">Ask your church admin to upgrade.</p>`}</div>`;
+}
+/* ---------- Shell ---------- */
+const V = {};
+function shell() {
+  if (!S.ready) return `<div class="loading">Opening your church records…</div>`;
+  if (!D.settings.church) return setupView();
+  const st = ST();
+  if (!roleAllows(S.route) || (S.route === 'branches' && !st.multiBranch)) { const first = NAV.find(n => roleAllows(n.id) && !(n.multiOnly && !st.multiBranch)); S.route = first ? first.id : 'dashboard'; }
+  const nav = NAV.filter(n => roleAllows(n.id) && !(n.multiOnly && !st.multiBranch)).map(n => {
+    const locked = (n.feat && !has(n.feat)) || (n.id === 'branches' && !has('branches'));
+    return `<button class="${S.route === n.id ? 'on' : ''}" data-act="goto" data-route="${n.id}" ${S.route === n.id ? 'aria-current="page"' : ''}>${icon(n.icon)}<span>${esc(n.label)}</span>${locked ? `<span class="lock" title="Upgrade to unlock">${icon('lock', 14)}</span>` : ''}</button>`;
+  }).join('');
+  const branchSel = isMulti() ? `<select class="input" data-ui="branch" aria-label="Branch"><option value="all" ${S.branch === 'all' ? 'selected' : ''}>All branches (HQ view)</option>${branches().map(b => `<option value="${esc(b.id)}" ${S.branch === b.id ? 'selected' : ''}>${esc(b.name)}${b.hq ? ' — HQ' : ''}</option>`).join('')}</select>` : '';
+  const roleSel = `<label class="inline-field"><span class="hide-sm">Viewing as</span><select class="input" data-ui="role" aria-label="Viewing as role">${Object.entries(ROLES).map(([k, r]) => `<option value="${k}" ${S.role === k ? 'selected' : ''}>${esc(r.label)}</option>`).join('')}</select></label>`;
+  const modePill = MODE === 'db' ? pill('Live · shared with your team', 'ok') : pill('Demo · saved in this browser', 'warn');
+  const view = (V[S.route] || V.dashboard)();
+  return `<div class="app ${S.navOpen ? 'nav-open' : ''}">
+    <aside class="side" aria-label="Main navigation">
+      <div class="brand"><span class="mark">${icon('crook', 20)}</span><div style="min-width:0"><b>Shepherd Desk</b><small>${esc(st.name)}</small></div></div>
+      <nav class="nav">${nav}</nav>
+      <div class="side-foot"><span>${esc(plan().name)} plan · ${isMulti() ? branches().length + ' branches' : 'Single church'}</span><span>${modePill}</span>
+        ${(typeof STORE !== 'undefined' && STORE) ? `<span class="split" style="gap:6px"><span style="overflow:hidden;text-overflow:ellipsis">${esc(STORE.user.email)}</span><button class="btn sm ghost" data-act="signOut">Sign out</button></span>` : ''}</div>
+    </aside>
+    <div class="side-scrim" data-act="toggleNav"></div>
+    <div class="main">
+      <header class="top">
+        <button class="btn ghost sm menu-btn" data-act="toggleNav" aria-label="Open menu">${icon('menu')}</button>
+        <span class="title">${esc(scopeLabel())}</span>
+        <div class="right">${branchSel}${roleSel}</div>
+      </header>
+      <main class="content">${exampleBanner()}${view}</main>
+    </div></div>`;
+}
+function exampleBanner() {
+  if (!ST().example || S.route === 'settings') return '';
+  return `<div class="banner">${icon('alert')}<span class="grow"><b>You’re looking at example records.</b> Explore freely. When you’re ready to enter your own church’s data, clear them in Settings.</span>${S.role === 'admin' ? `<button class="btn sm" data-act="goto" data-route="settings">Go to Settings</button>` : ''}</div>`;
+}
+
+/* ---------- First-run setup ---------- */
+function setupView() {
+  return `<div class="setup-wrap"><form class="setup panel" data-form="setup" novalidate>
+    <div class="brand" style="padding:0"><span class="mark">${icon('crook', 20)}</span><div><b>Shepherd Desk</b><small>Set up your church in two minutes</small></div></div>
+    <div class="field"><label for="su-name">Church name</label><input class="input" id="su-name" name="name" placeholder="e.g. Destiny Impact Church" required></div>
+    <div class="form-grid">
+      <div class="field"><label for="su-main">Location or branch name</label><input class="input" id="su-main" name="mainBranch" placeholder="e.g. Ondo"></div>
+      <div class="field"><label for="su-pastor">Senior pastor</label><input class="input" id="su-pastor" name="pastor" placeholder="e.g. Pastor A. Bello"></div>
+    </div>
+    <div class="field"><label for="su-addr">Address</label><input class="input" id="su-addr" name="address" placeholder="Street, town, state"></div>
+    <div class="field"><span class="lbl">Does your church have branches?</span>
+      <label class="choice"><input type="radio" name="branches" value="no" checked><div><b>No, we’re one church</b><span>Start on the free Starter plan. You can add branches any time.</span></div></label>
+      <label class="choice"><input type="radio" name="branches" value="yes"><div><b>Yes, we have branches</b><span>Turns on the HQ dashboard, remittance and branch reports (Branch Network plan).</span></div></label>
+    </div>
+    <p class="err" id="mf-err"></p>
+    <button class="btn primary" type="submit" style="justify-content:center">Create my church</button>
+  </form></div>`;
+}
+
+/* ---------- Dashboard ---------- */
+V.dashboard = () => {
+  const st = ST(); const mainType = st.serviceTypes[0];
+  const sundays = all('services').filter(inBranch).filter(s => s.type === mainType).sort(byDateDesc);
+  const last = sundays[0], prev = sundays[1];
+  const mNow = thisMonth(), mPrev = shiftMonth(mNow, -1);
+  const ftNow = members().filter(m => m.followUp && monthOf(m.followUp.visited) === mNow).length;
+  const ftPrev = members().filter(m => m.followUp && monthOf(m.followUp.visited) === mPrev).length;
+  const incNow = sum(all('income').filter(inBranch).filter(i => monthOf(i.date) === mNow));
+  const incPrev = sum(all('income').filter(inBranch).filter(i => monthOf(i.date) === mPrev));
+  const due = followDue();
+  const trend = sundays.slice(0, 12).reverse().map(s => ({ l: fmtShort(s.date), v: s.total || 0 }));
+  const abs = absentees();
+  const pendingExp = has('expenses') ? all('expenses').filter(inBranch).filter(e => e.status === 'Pending') : [];
+  const openCounts = has('counts') ? all('counts').filter(inBranch).filter(c => c.status !== 'Verified') : [];
+  const kidsIn = has('children') ? all('checkins').filter(inBranch).filter(c => c.date === today() && !c.outAt) : [];
+  const attn = [
+    abs.length && roleAllows('attendance') ? { n: abs.length, t: 'members missed the last 3 services', r: 'attendance', tone: 'warn' } : null,
+    due.length && roleAllows('followup') ? { n: due.length, t: 'first-timer follow-ups are due or overdue', r: 'followup', tone: 'bad' } : null,
+    pendingExp.length && roleAllows('giving') ? { n: pendingExp.length, t: 'expense requests waiting for approval', r: 'giving', tab: 'expenses', tone: 'warn' } : null,
+    openCounts.length && roleAllows('giving') ? { n: openCounts.length, t: 'offering counts still need sign-off', r: 'giving', tab: 'counts', tone: 'warn' } : null,
+    kidsIn.length && roleAllows('children') ? { n: kidsIn.length, t: 'children are checked in and not yet picked up', r: 'children', tone: 'accent' } : null
+  ].filter(Boolean);
+  const cel = celebrations(14);
+  const months = lastMonths(6);
+  const finGroups = months.map(m => ({ l: monthLabel(m), a: sum(all('income').filter(inBranch).filter(i => monthOf(i.date) === m)), b: sum(all('expenses').filter(inBranch).filter(e => monthOf(e.date) === m && e.status === 'Approved')) }));
+  const total = members().filter(m => !GONE.includes(m.status)).length; const lim = plan().limit;
+  const greet = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening';
+  return `<div class="page-head"><div><h1 class="page">${greet}</h1><p class="sub">${esc(new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))} · ${esc(scopeLabel())}</p></div>
+    <div class="actions">${roleAllows('attendance') ? `<button class="btn primary" data-act="newService">${icon('check', 16)} Record attendance</button>` : ''}${roleAllows('followup') ? `<button class="btn" data-act="newFirstTimer">${icon('plus', 16)} First-timer</button>` : ''}</div></div>
+  <div class="grid kpis">
+    ${kpi(`Last ${mainType.toLowerCase()}`, last ? num(last.total) : '—', last ? `${fmtShort(last.date)} · ${deltaText(last.total, prev && prev.total, 'the one before')}` : 'No services recorded yet')}
+    ${kpi('First-timers this month', num(ftNow), deltaText(ftNow, ftPrev, 'last month'))}
+    ${roleAllows('giving') ? kpi('Giving this month', naira(incNow), deltaText(incNow, incPrev, 'last month')) : kpi('Members', num(total), '')}
+    ${kpi('Follow-ups due', num(due.length), due.length ? '<span class="down">Needs attention</span>' : '<span class="up">All caught up</span>')}
+  </div>
+  <div class="grid cols-2 gap">
+    <section class="panel"><h2>${esc(mainType)} attendance <span class="muted">last ${trend.length} services</span></h2>${lineChart(trend, { fmt: v => num(v), label: 'Attendance trend' })}</section>
+    <section class="panel"><h2>Needs attention</h2>${attn.length ? `<div class="list">${attn.map(a => `<div class="row"><span class="pill ${a.tone}" style="min-width:34px;justify-content:center">${a.n}</span><span class="grow">${esc(a.t)}</span><button class="btn sm" data-act="goto" data-route="${a.r}" ${a.tab ? `data-tab="${a.tab}"` : ''}>Open ${icon('arrow', 14)}</button></div>`).join('')}</div>` : emptyBox('Nothing needs attention right now.')}
+      <div style="margin-top:16px"><div class="split small"><span class="muted">Members on the ${esc(plan().name)} plan</span><b>${num(total)}${lim === Infinity ? '' : ' / ' + num(lim)}</b></div>${lim === Infinity ? '' : `<div class="meter ${total / lim > .85 ? 'warn' : ''}" style="margin-top:6px"><i style="width:${Math.min(100, total / lim * 100)}%"></i></div>`}</div></section>
+  </div>
+  <div class="grid cols-2 gap">
+    ${roleAllows('giving') ? `<section class="panel"><h2>Money in and out <span class="muted">last 6 months</span></h2>${has('expenses') ? barChart(finGroups, [{ key: 'a', label: 'Income', color: 'var(--accent)' }, { key: 'b', label: 'Approved expenses', color: 'var(--gold)' }], { fmt: v => '₦' + compact(v), label: 'Income and expenses by month' }) : barChart(finGroups, [{ key: 'a', label: 'Income', color: 'var(--accent)' }], { fmt: v => '₦' + compact(v), label: 'Income by month' })}</section>` : ''}
+    <section class="panel"><h2>Birthdays & anniversaries <span class="muted">next 14 days</span></h2>${cel.length ? `<div class="list">${cel.slice(0, 8).map(c => `<div class="row"><span class="grow">${who(c.m, `${esc(c.label)} · ${c.diff === 0 ? '<b>Today</b>' : c.diff === 1 ? 'Tomorrow' : fmtShort(c.date)}`)}</span>${waBtn(c.m.phone, fillTpl(c.label === 'Birthday' ? ST().templates.birthday : 'Happy wedding anniversary, {first_name}! {church} celebrates God’s faithfulness in your home.', c.m), 'Send wish')}</div>`).join('')}</div>` : emptyBox('No birthdays or anniversaries in the next two weeks.')}</section>
+  </div>`;
+};
+
+/* ---------- Members ---------- */
+V.members = () => {
+  const st = ST(); const seen = lastSeenMap();
+  let list = members(); const q = S.q.trim().toLowerCase();
+  if (q) list = list.filter(m => (fullName(m) + ' ' + (m.phone || '') + ' ' + (m.household || '') + ' ' + (m.email || '')).toLowerCase().includes(q));
+  if (S.fStatus) list = list.filter(m => m.status === S.fStatus);
+  if (S.fDept) list = list.filter(m => (m.depts || []).includes(S.fDept));
+  list.sort((a, b) => fullName(a).localeCompare(fullName(b)));
+  const counts = {}; members().forEach(m => counts[m.status] = (counts[m.status] || 0) + 1);
+  const canEdit = ['admin', 'pastor', 'secretary'].includes(S.role);
+  const shown = list.slice(0, 300);
+  S.sel.forEach(id => { if (!D.members[id]) S.sel.delete(id); });
+  const allSel = canEdit && shown.length && shown.every(m => S.sel.has(m.id));
+  const rows = shown.map(m => `<tr class="click" data-act="openMember" data-id="${esc(m.id)}">
+    ${canEdit ? `<td class="sel-cell" data-act="selMember" data-id="${esc(m.id)}"><input type="checkbox" aria-label="Select ${esc(fullName(m))}" ${S.sel.has(m.id) ? 'checked' : ''}></td>` : ''}
+    <td>${who(m, esc(m.household ? m.household + ' household' : (m.isChild ? 'Child' : '')))}</td><td>${esc(m.phone || '—')}</td><td>${pill(m.status, statusTone(m.status))}</td>
+    <td class="hide-sm">${esc((m.depts || []).join(', ') || '—')}</td><td class="hide-sm">${seen[m.id] ? fmtShort(seen[m.id]) : '<span class="muted">Not recorded</span>'}</td>${isMulti() ? `<td class="hide-sm">${esc(branchName(m.branchId))}</td>` : ''}
+    ${canEdit ? `<td class="num row-actions"><button class="btn sm" data-act="editMember" data-id="${esc(m.id)}" aria-label="Edit ${esc(fullName(m))}">Edit</button> <button class="btn sm danger" data-act="deleteMember" data-id="${esc(m.id)}" aria-label="Delete ${esc(fullName(m))}">Delete</button></td>` : ''}</tr>`).join('');
+  const bulkBar = canEdit && S.sel.size ? `<div class="banner bulk" style="margin:0 0 14px"><span class="grow"><b>${S.sel.size} selected</b></span><button class="btn sm" data-act="clearSel">Clear selection</button><button class="btn sm danger" data-act="bulkDelete">Delete selected</button></div>` : '';
+  return `<div class="page-head"><div><h1 class="page">Members</h1><p class="sub">${num(members().length)} people · ${STATUSES.filter(s => counts[s]).map(s => `${num(counts[s])} ${s.toLowerCase()}`).slice(0, 4).join(' · ')}</p></div>
+    <div class="actions">${canEdit ? `<button class="btn primary" data-act="newMember">${icon('plus', 16)} Add member</button>` : ''}${canEdit ? `<button class="btn" data-act="importMembers">${icon('upload', 16)} Import</button>` : ''}<button class="btn" data-act="exportMembers">${icon('download', 16)} Export</button></div></div>
+  <section class="panel">
+    <div class="toolbar"><input class="input search" id="m-search" data-ui="q" data-quiet-render value="${esc(S.q)}" placeholder="Search name, phone or household" aria-label="Search members">
+      <select class="input" data-ui="fStatus" aria-label="Filter by status"><option value="">All statuses</option>${STATUSES.map(s => `<option ${S.fStatus === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+      <select class="input" data-ui="fDept" aria-label="Filter by department"><option value="">All departments</option>${st.departments.map(s => `<option ${S.fDept === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></div>
+    ${bulkBar}${list.length ? `<div class="table-wrap"><table><thead><tr>${canEdit ? `<th class="sel-cell" data-act="selAll"><input type="checkbox" aria-label="Select all shown" ${allSel ? 'checked' : ''}></th>` : ''}<th>Name</th><th>Phone</th><th>Status</th><th class="hide-sm">Departments</th><th class="hide-sm">Last attended</th>${isMulti() ? '<th class="hide-sm">Branch</th>' : ''}${canEdit ? '<th class="num">Actions</th>' : ''}</tr></thead><tbody>${rows}</tbody></table></div>${list.length > 300 ? `<p class="muted small">Showing the first 300 of ${num(list.length)}. Narrow your search to see more.</p>` : ''}` : emptyBox(members().length ? 'No one matches these filters.' : 'No members yet. Add your first member or import a list from Excel.', canEdit && !members().length ? `<button class="btn primary" data-act="newMember">Add member</button>` : '')}
+  </section>`;
+};
+function showMember(id) {
+  const m = D.members[id]; if (!m) return;
+  const st = ST(); const year = today().slice(0, 4);
+  const svc = all('services').filter(s => s.mode === 'names' && (s.branchId || 'main') === (m.branchId || 'main')).sort(byDateDesc).slice(0, 12);
+  const came = svc.filter(s => (s.present || []).includes(id)).length;
+  const gifts = all('income').filter(i => i.memberId === id && (i.date || '').startsWith(year)).sort(byDateDesc);
+  const hh = m.household ? all('members').filter(x => x.household === m.household && x.id !== id) : [];
+  const canEdit = ['admin', 'pastor', 'secretary'].includes(S.role);
+  const showGiving = ['admin', 'pastor', 'finance'].includes(S.role);
+  const body = `<div class="split">${who(m, esc(m.phone || 'No phone'))}${pill(m.status, statusTone(m.status))}</div>
+    <dl class="dl">
+      <dt>Gender</dt><dd>${esc(m.gender || '—')}${m.isChild ? ' · Child' : ''}</dd>
+      <dt>Birthday</dt><dd>${m.dob ? fmtDate(m.dob) : '—'}</dd>
+      ${m.anniversary ? `<dt>Wedding anniversary</dt><dd>${fmtDate(m.anniversary)}</dd>` : ''}
+      <dt>Departments</dt><dd>${esc((m.depts || []).join(', ') || '—')}</dd>
+      ${m.cell ? `<dt>Cell group</dt><dd>${esc(m.cell)}</dd>` : ''}
+      <dt>Household</dt><dd>${esc(m.household || '—')}${hh.length ? ` · with ${hh.map(x => `<a href="#" data-act="openMember" data-id="${esc(x.id)}">${esc(fullName(x))}</a>`).join(', ')}` : ''}</dd>
+      ${m.address ? `<dt>Address</dt><dd>${esc(m.address)}</dd>` : ''}
+      ${m.occupation ? `<dt>Occupation</dt><dd>${esc(m.occupation)}</dd>` : ''}
+      ${m.allergy ? `<dt>Allergy / care</dt><dd><span class="pill warn">${esc(m.allergy)}</span></dd>` : ''}
+      ${m.isChild && m.guardianName ? `<dt>Guardian</dt><dd>${esc(m.guardianName)} ${esc(m.guardianPhone || '')}</dd>` : ''}
+      <dt>Joined</dt><dd>${m.joined ? fmtDate(m.joined) : '—'}</dd>
+      ${isMulti() ? `<dt>Branch</dt><dd>${esc(branchName(m.branchId))}</dd>` : ''}
+      <dt>Attendance</dt><dd>${svc.length ? `${came} of the last ${svc.length} services` : 'No services recorded yet'}</dd>
+    </dl>
+    ${(m.history || []).length ? `<div><b class="small">Transfers</b><div class="timeline" style="margin-top:6px">${m.history.map(h => `<div class="note">${esc(branchName(h.from))} → ${esc(branchName(h.to))}<small>${fmtDate(h.date)}</small></div>`).join('')}</div></div>` : ''}
+    ${showGiving ? `<div><div class="split"><b>Giving in ${year}</b><b>${naira(sum(gifts))}</b></div>${gifts.length ? `<div class="table-wrap" style="margin-top:6px"><table><tbody>${gifts.slice(0, 8).map(g => `<tr><td>${fmtShort(g.date)}</td><td>${esc(g.category)}</td><td class="num">${naira(g.amount)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted small" style="margin:4px 0 0">No named giving recorded this year.</p>'}</div>` : ''}`;
+  const foot = `${canEdit ? `<button class="btn danger left" data-act="deleteMember" data-id="${esc(id)}">Delete</button>` : ''}
+    ${showGiving && gifts.length ? `<button class="btn" data-act="statement" data-id="${esc(id)}">${icon('copy', 15)} Giving statement</button>` : ''}
+    ${waBtn(m.phone || m.guardianPhone, fillTpl('Hello {first_name}, ', m))}
+    ${canEdit ? `<button class="btn primary" data-act="editMember" data-id="${esc(id)}">Edit</button>` : ''}`;
+  openModal(fullName(m), body, foot, { noFocus: true });
+}
+function memberForm(id) {
+  const m = id ? D.members[id] : { status: 'Member', joined: today(), branchId: curBranchId() }; const st = ST();
+  const opt = (arr, v) => arr.map(x => `<option ${x === v ? 'selected' : ''}>${esc(x)}</option>`).join('');
+  const body = `<input type="hidden" name="id" value="${esc(id || '')}">
+   <div class="form-grid">
+    <div class="field"><label for="f-first">First name *</label><input class="input" id="f-first" name="first" value="${esc(m.first || '')}" autocomplete="off"></div>
+    <div class="field"><label for="f-last">Surname</label><input class="input" id="f-last" name="last" value="${esc(m.last || '')}" autocomplete="off"></div>
+    <div class="field"><label for="f-phone">Phone *</label><input class="input" id="f-phone" name="phone" inputmode="tel" value="${esc(m.phone || '')}" placeholder="0803 123 4567"></div>
+    <div class="field"><label for="f-gender">Gender</label><select class="input" id="f-gender" name="gender"><option value="">—</option>${opt(['Male', 'Female'], m.gender)}</select></div>
+    <div class="field"><label for="f-status">Status</label><select class="input" id="f-status" name="status">${opt(STATUSES, m.status)}</select></div>
+    <div class="field"><label for="f-dob">Birthday</label><input class="input" type="date" id="f-dob" name="dob" value="${esc(m.dob || '')}"></div>
+    <div class="field"><label for="f-ann">Wedding anniversary</label><input class="input" type="date" id="f-ann" name="anniversary" value="${esc(m.anniversary || '')}"></div>
+    <div class="field"><label for="f-joined">Date joined</label><input class="input" type="date" id="f-joined" name="joined" value="${esc(m.joined || '')}"></div>
+    <div class="field"><label for="f-house">Household / family</label><input class="input" id="f-house" name="household" list="households" value="${esc(m.household || '')}" placeholder="e.g. Adeyemi family"><datalist id="households">${[...new Set(all('members').map(x => x.household).filter(Boolean))].map(h => `<option value="${esc(h)}">`).join('')}</datalist></div>
+    <div class="field"><label for="f-cell">Cell / house fellowship</label><input class="input" id="f-cell" name="cell" value="${esc(m.cell || '')}"></div>
+    <div class="field"><label for="f-email">Email</label><input class="input" id="f-email" name="email" type="email" value="${esc(m.email || '')}"></div>
+    <div class="field"><label for="f-occ">Occupation</label><input class="input" id="f-occ" name="occupation" value="${esc(m.occupation || '')}"></div>
+    ${isMulti() ? `<div class="field"><label for="f-branch">Branch</label><select class="input" id="f-branch" name="branchId">${branches().map(b => `<option value="${esc(b.id)}" ${(m.branchId || 'main') === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select></div>` : ''}
+   </div>
+   <div class="field"><label for="f-addr">Address</label><input class="input" id="f-addr" name="address" value="${esc(m.address || '')}"></div>
+   <div class="field"><span class="lbl">Departments</span><div class="checks">${st.departments.map(d => `<label><input type="checkbox" name="depts" value="${esc(d)}" ${(m.depts || []).includes(d) ? 'checked' : ''}>${esc(d)}</label>`).join('')}</div></div>
+   <div class="field"><span class="lbl">Child record</span><div class="checks"><label><input type="checkbox" name="isChild" value="1" ${m.isChild ? 'checked' : ''}>This is a child (under 13)</label></div></div>
+   <div class="form-grid">
+    <div class="field"><label for="f-gname">Guardian name (children)</label><input class="input" id="f-gname" name="guardianName" value="${esc(m.guardianName || '')}"></div>
+    <div class="field"><label for="f-gphone">Guardian phone (children)</label><input class="input" id="f-gphone" name="guardianPhone" inputmode="tel" value="${esc(m.guardianPhone || '')}"></div>
+    <div class="field"><label for="f-allergy">Allergy or special care</label><input class="input" id="f-allergy" name="allergy" value="${esc(m.allergy || '')}" placeholder="e.g. Peanuts"></div>
+   </div>`;
+  formModal('member', id ? 'Edit ' + fullName(m) : 'Add member', body, id ? 'Save changes' : 'Add member', { wide: true });
+}
+
+/* ---------- Attendance ---------- */
+V.attendance = () => {
+  const st = ST(); const mainType = st.serviceTypes[0];
+  const svcs = all('services').filter(inBranch).sort(byDateDesc);
+  const sundays = svcs.filter(s => s.type === mainType);
+  const avg4 = sundays.length ? Math.round(sum(sundays.slice(0, 4), s => s.total) / Math.min(4, sundays.length)) : 0;
+  const last = sundays[0];
+  const abs = absentees();
+  const trend = sundays.slice(0, 12).reverse().map(s => ({ l: fmtShort(s.date), v: s.total || 0 }));
+  const canMsg = roleAllows('comms') || roleAllows('followup');
+  return `<div class="page-head"><div><h1 class="page">Attendance</h1><p class="sub">Tick names, scan in, or enter a headcount for each service.</p></div>
+    <div class="actions"><button class="btn primary" data-act="newService">${icon('check', 16)} Record attendance</button></div></div>
+  <div class="grid kpis">
+    ${kpi(`Average ${mainType.toLowerCase()}`, num(avg4), 'Last 4 services')}
+    ${kpi('Last service', last ? num(last.total) : '—', last ? `${num(last.men)} men · ${num(last.women)} women · ${num(last.children)} children` : 'Nothing recorded yet')}
+    ${kpi('First-timers last service', last ? num(last.firstTimers) : '—', last ? fmtDate(last.date) : '')}
+    ${kpi('Missing 3 in a row', num(abs.length), abs.length ? '<span class="down">Reach out this week</span>' : '<span class="up">No one</span>')}
+  </div>
+  <div class="grid cols-2 gap">
+    <section class="panel"><h2>${esc(mainType)} trend</h2>${lineChart(trend, { fmt: v => num(v), label: 'Attendance trend' })}</section>
+    <section class="panel"><h2>Missed the last 3 services <span class="muted">${num(abs.length)} people</span></h2>
+      ${abs.length ? `<div class="list">${abs.slice(0, 10).map(a => { const contacted = a.m.lastContacted && daysBetween(a.m.lastContacted, today()) <= 7; return `<div class="row"><span class="grow">${who(a.m, a.last ? 'Last seen ' + fmtShort(a.last) : 'Not seen in recorded services')}</span>${contacted ? pill('Contacted ' + fmtShort(a.m.lastContacted), 'ok') : `${canMsg ? waBtn(a.m.phone, fillTpl(st.templates.missed, a.m), 'Message') : ''}<button class="btn sm" data-act="markContacted" data-id="${esc(a.m.id)}">Mark contacted</button>`}</div>`; }).join('')}</div>${abs.length > 10 ? `<p class="muted small">And ${abs.length - 10} more. Use Messages → “Absentees” to reach everyone.</p>` : ''}` : emptyBox('Everyone active has attended at least one of the last three services.')}
+    </section>
+  </div>
+  <section class="panel gap"><h2>Recorded services</h2>
+    ${svcs.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Service</th><th class="hide-sm">How</th><th class="num">Men</th><th class="num">Women</th><th class="num">Children</th><th class="num">First-timers</th><th class="num">Total</th>${isMulti() ? '<th class="hide-sm">Branch</th>' : ''}</tr></thead><tbody>
+      ${svcs.slice(0, 40).map(s => `<tr class="click" data-act="editService" data-id="${esc(s.id)}"><td>${fmtDate(s.date)}</td><td>${esc(s.type)}</td><td class="hide-sm">${s.mode === 'names' ? pill('Names', 'accent') : pill('Headcount')}</td><td class="num">${num(s.men)}</td><td class="num">${num(s.women)}</td><td class="num">${num(s.children)}</td><td class="num">${num(s.firstTimers)}</td><td class="num"><b>${num(s.total)}</b></td>${isMulti() ? `<td class="hide-sm">${esc(branchName(s.branchId))}</td>` : ''}</tr>`).join('')}
+    </tbody></table></div>` : emptyBox('No services recorded yet.', `<button class="btn primary" data-act="newService">Record your first service</button>`)}
+  </section>`;
+};
+function serviceForm(id) {
+  const st = ST(); const s = id ? D.services[id] : { date: today(), type: st.serviceTypes[0], mode: 'names', present: [] };
+  const people = members().filter(m => !GONE.includes(m.status) && m.status !== 'Inactive').sort((a, b) => fullName(a).localeCompare(fullName(b)));
+  const present = new Set(s.present || []);
+  const body = `<input type="hidden" name="id" value="${esc(id || '')}"><input type="hidden" name="mode" id="att-mode" value="${esc(s.mode)}">
+    <div class="form-grid">
+      <div class="field"><label for="att-date">Date</label><input class="input" type="date" id="att-date" name="date" value="${esc(s.date)}"></div>
+      <div class="field"><label for="att-type">Service</label><select class="input" id="att-type" name="type">${st.serviceTypes.map(t => `<option ${t === s.type ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
+    </div>
+    <div class="seg" role="tablist"><button type="button" class="${s.mode === 'names' ? 'on' : ''}" data-act="attMode" data-mode="names">Tick names</button><button type="button" class="${s.mode === 'count' ? 'on' : ''}" data-act="attMode" data-mode="count">Headcount only</button></div>
+    <div id="att-names" ${s.mode === 'names' ? '' : 'hidden'} class="stack">
+      <div class="split"><input class="input search" id="att-q" placeholder="Find a name" aria-label="Find a name" style="flex:1"><b id="att-count">${present.size} present</b></div>
+      <div class="check-list" id="att-list">${people.map(m => `<label class="check-row" data-name="${esc(fullName(m).toLowerCase())}"><input type="checkbox" name="present" value="${esc(m.id)}" ${present.has(m.id) ? 'checked' : ''}><span class="grow">${esc(fullName(m))}</span>${m.status === 'First-timer' ? pill('First-timer', 'gold') : m.isChild ? pill('Child') : ''}</label>`).join('') || '<div class="empty">Add members first, or use headcount.</div>'}</div>
+      <div class="panel" style="padding:12px;background:var(--surface-2);border:0"><b class="small">New face today?</b><div class="toolbar" style="margin:8px 0 0"><input class="input" id="ft-first" placeholder="Full name" style="flex:1 1 150px"><input class="input" id="ft-phone" placeholder="Phone" inputmode="tel" style="flex:1 1 120px"><button type="button" class="btn sm" data-act="attAddFT">${icon('plus', 14)} Add first-timer</button></div></div>
+    </div>
+    <div id="att-counts" ${s.mode === 'count' ? '' : 'hidden'}><div class="form-grid">
+      ${[['men', 'Men'], ['women', 'Women'], ['children', 'Children'], ['firstTimers', 'Of which first-timers']].map(([k, l]) => `<div class="field"><label for="c-${k}">${l}</label><input class="input" type="number" min="0" inputmode="numeric" id="c-${k}" name="${k}" value="${s.mode === 'count' ? esc(s[k] || 0) : ''}"></div>`).join('')}
+    </div><p class="muted small">Use headcount for large services or when the list isn’t up to date.</p></div>`;
+  formModal('service', id ? 'Edit attendance' : 'Record attendance', body, 'Save attendance', { wide: true, left: id ? `<button class="btn danger left" data-act="deleteService" data-id="${esc(id)}">Delete</button>` : '' });
+}
+
+/* ---------- First-timers & follow-up ---------- */
+V.followup = () => {
+  const list = members().filter(m => m.followUp);
+  const mNow = thisMonth();
+  const recent = list.filter(m => daysBetween(m.followUp.visited || today(), today()) <= 90);
+  const contacted = recent.filter(m => m.followUp.contactedAt);
+  const fast = contacted.filter(m => daysBetween(m.followUp.visited, m.followUp.contactedAt) <= 3);
+  const conv = recent.filter(m => ['Member', 'Department'].includes(m.followUp.stage));
+  const cols = STAGES.map(stage => {
+    const items = list.filter(m => m.followUp.stage === stage && !(stage === 'Department' && daysBetween(m.followUp.movedAt || m.followUp.visited, today()) > 60)).sort((a, b) => (a.followUp.due || '9').localeCompare(b.followUp.due || '9'));
+    return `<div class="col"><h3>${esc(stage)} <span class="pill">${items.length}</span></h3>${items.map(m => {
+      const f = m.followUp; const od = f.due && !['Member', 'Department'].includes(stage) ? daysBetween(today(), f.due) : null;
+      const dueP = od === null ? '' : od < 0 ? pill(`${-od}d overdue`, 'bad') : od === 0 ? pill('Due today', 'warn') : pill('Due ' + fmtShort(f.due));
+      return `<div class="card" data-act="openFT" data-id="${esc(m.id)}" role="button" tabindex="0"><b>${esc(fullName(m))}</b><div class="meta">Visited ${fmtShort(f.visited)}${f.assignee ? ' · ' + esc(f.assignee) : ' · <span class="down">Unassigned</span>'}</div><div class="card-foot">${dueP || '<span></span>'}${stage !== 'Department' ? `<button class="btn sm" data-act="ftNext" data-id="${esc(m.id)}" title="Move to ${esc(STAGES[STAGES.indexOf(stage) + 1])}">Next ${icon('arrow', 14)}</button>` : ''}</div></div>`;
+    }).join('') || '<p class="muted small" style="margin:4px">No one here.</p>'}</div>`;
+  }).join('');
+  return `<div class="page-head"><div><h1 class="page">First-timers & follow-up</h1><p class="sub">Every visitor gets a person, a due date and a next step.</p></div>
+    <div class="actions"><button class="btn primary" data-act="newFirstTimer">${icon('plus', 16)} Add first-timer</button></div></div>
+  <div class="grid kpis">
+    ${kpi('First-timers this month', num(list.filter(m => monthOf(m.followUp.visited) === mNow).length), '')}
+    ${kpi('Contacted within 72 hours', recent.length ? Math.round(fast.length / recent.length * 100) + '%' : '—', 'Target 80% · last 90 days')}
+    ${kpi('Became members', recent.length ? Math.round(conv.length / recent.length * 100) + '%' : '—', `${conv.length} of ${recent.length} in the last 90 days`)}
+    ${kpi('Due or overdue', num(followDue().length), '')}
+  </div>
+  <section class="panel gap"><h2>Follow-up pipeline <span class="muted">tap a card for details and notes</span></h2><div class="board">${cols}</div></section>`;
+};
+function firstTimerForm() {
+  const workers = members().filter(m => ['Worker', 'Minister'].includes(m.status)).map(fullName);
+  const body = `<div class="form-grid">
+      <div class="field"><label for="n-first">First name *</label><input class="input" id="n-first" name="first"></div>
+      <div class="field"><label for="n-last">Surname</label><input class="input" id="n-last" name="last"></div>
+      <div class="field"><label for="n-phone">Phone *</label><input class="input" id="n-phone" name="phone" inputmode="tel"></div>
+      <div class="field"><label for="n-gender">Gender</label><select class="input" id="n-gender" name="gender"><option value="">—</option><option>Male</option><option>Female</option></select></div>
+      <div class="field"><label for="n-date">Date visited</label><input class="input" type="date" id="n-date" name="visited" value="${today()}"></div>
+      <div class="field"><label for="n-inv">Invited by</label><input class="input" id="n-inv" name="invitedBy" list="all-names"></div>
+      <div class="field"><label for="n-heard">How they heard</label><select class="input" id="n-heard" name="heardVia"><option value="">—</option><option>Invited by a member</option><option>Walked in</option><option>Social media</option><option>Outreach / crusade</option><option>Radio / flyer</option></select></div>
+      <div class="field"><label for="n-assign">Assign follow-up to</label><input class="input" id="n-assign" name="assignee" list="workers"></div>
+    </div>
+    <datalist id="workers">${workers.map(w => `<option value="${esc(w)}">`).join('')}</datalist><datalist id="all-names">${members().map(m => `<option value="${esc(fullName(m))}">`).join('')}</datalist>
+    <div class="field"><label for="n-addr">Address / area</label><input class="input" id="n-addr" name="address"></div>
+    <div class="field"><label for="n-prayer">Prayer request (visible to pastors and follow-up)</label><textarea class="input" id="n-prayer" name="prayer" rows="3"></textarea></div>`;
+  formModal('firsttimer', 'Add first-timer', body, 'Add and start follow-up', { wide: true });
+}
+function ftModal(id) {
+  const m = D.members[id]; if (!m || !m.followUp) return; const f = m.followUp; const st = ST();
+  const workers = members().filter(x => ['Worker', 'Minister'].includes(x.status)).map(fullName);
+  const body = `<input type="hidden" name="id" value="${esc(id)}">
+    <div class="split">${who(m, esc(m.phone || 'No phone'))}${waBtn(m.phone, fillTpl(st.templates.welcome, m), 'Send welcome')}</div>
+    <dl class="dl"><dt>Visited</dt><dd>${fmtDate(f.visited)}</dd>${f.invitedBy ? `<dt>Invited by</dt><dd>${esc(f.invitedBy)}</dd>` : ''}${f.heardVia ? `<dt>Heard via</dt><dd>${esc(f.heardVia)}</dd>` : ''}${m.address ? `<dt>Address</dt><dd>${esc(m.address)}</dd>` : ''}${f.prayer ? `<dt>Prayer request</dt><dd>${esc(f.prayer)}</dd>` : ''}${f.contactedAt ? `<dt>First contacted</dt><dd>${fmtDate(f.contactedAt)} (${daysBetween(f.visited, f.contactedAt)} days after visit)</dd>` : ''}</dl>
+    <div class="form-grid">
+      <div class="field"><label for="u-stage">Stage</label><select class="input" id="u-stage" name="stage">${STAGES.map(s => `<option ${s === f.stage ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+      <div class="field"><label for="u-assign">Assigned to</label><input class="input" id="u-assign" name="assignee" list="workers2" value="${esc(f.assignee || '')}"><datalist id="workers2">${workers.map(w => `<option value="${esc(w)}">`).join('')}</datalist></div>
+      <div class="field"><label for="u-due">Next follow-up due</label><input class="input" type="date" id="u-due" name="due" value="${esc(f.due || '')}"></div>
+      <div class="field"><label for="u-dept">Department (last stage)</label><select class="input" id="u-dept" name="dept"><option value="">—</option>${st.departments.map(d => `<option ${(m.depts || []).includes(d) ? 'selected' : ''}>${esc(d)}</option>`).join('')}</select></div>
+    </div>
+    <div class="field"><label for="u-note">Add a note</label><textarea class="input" id="u-note" name="note" rows="2" placeholder="e.g. Called, she’ll come with her sister next Sunday"></textarea></div>
+    ${(f.notes || []).length ? `<div class="timeline">${f.notes.slice().reverse().map(n => `<div class="note">${esc(n.text)}<small>${fmtDate(n.date)} · ${esc(n.by || '')}</small></div>`).join('')}</div>` : '<p class="muted small" style="margin:0">No notes yet.</p>'}`;
+  formModal('followup', 'Follow-up: ' + fullName(m), body, 'Save', { wide: true, noFocus: true, left: `<button class="btn danger" data-act="deleteMember" data-id="${esc(id)}">Delete</button><button class="btn left" data-act="openMember" data-id="${esc(id)}">Full profile</button>` });
+}
+/* ---------- Giving & finance ---------- */
+V.giving = () => {
+  const tabs = [['overview', 'Overview'], ['income', 'Income'], ['expenses', 'Expenses', 'expenses'], ['counts', 'Offering counts', 'counts']];
+  if (!tabs.some(t => t[0] === S.gTab)) S.gTab = 'overview';
+  const tabBar = `<div class="tabs" role="tablist">${tabs.map(([k, l, f]) => `<button class="tab ${S.gTab === k ? 'on' : ''}" data-act="gTab" data-tab="${k}" role="tab" aria-selected="${S.gTab === k}">${esc(l)}${f && !has(f) ? icon('lock', 13) : ''}</button>`).join('')}</div>`;
+  const ro = !canFin() ? `<p class="muted small" style="margin:0 0 12px">You’re viewing finance as ${esc(ROLES[S.role].label)}: read-only.</p>` : '';
+  let body = '';
+  if (S.gTab === 'overview') body = givingOverview();
+  else if (S.gTab === 'income') body = givingIncome();
+  else if (S.gTab === 'expenses') body = has('expenses') ? givingExpenses() : gate('expenses', 'Expense tracking');
+  else body = has('counts') ? givingCounts() : gate('counts', 'Offering count sheets');
+  return `<div class="page-head"><div><h1 class="page">Giving & finance</h1><p class="sub">Tithes, offerings and expenses, with a record of who counted and who approved.</p></div>
+    <div class="actions">${canFin() ? `<button class="btn primary" data-act="newIncome">${icon('plus', 16)} Record giving</button>${has('expenses') ? `<button class="btn" data-act="newExpense">${icon('plus', 16)} Expense</button>` : ''}` : ''}</div></div>${tabBar}${ro}${body}`;
+};
+const monthPicker = () => `<label class="inline-field">Month <input class="input" type="month" data-ui="gMonth" value="${esc(S.gMonth)}" style="width:auto"></label>`;
+function givingOverview() {
+  const m = S.gMonth; const inc = all('income').filter(inBranch).filter(i => monthOf(i.date) === m);
+  const exp = all('expenses').filter(inBranch).filter(e => monthOf(e.date) === m && e.status === 'Approved');
+  const cats = {}; inc.forEach(i => cats[i.category] = (cats[i.category] || 0) + (+i.amount || 0));
+  const months = lastMonths(6);
+  const groups = months.map(x => ({ l: monthLabel(x), a: sum(all('income').filter(inBranch).filter(i => monthOf(i.date) === x)), b: sum(all('expenses').filter(inBranch).filter(e => monthOf(e.date) === x && e.status === 'Approved')) }));
+  const online = inc.filter(i => /Online|USSD/.test(i.method || ''));
+  return `<div class="toolbar">${monthPicker()}</div>
+  <div class="grid kpis">${kpi('Income', naira(sum(inc)), monthLabel(m, true))}${has('expenses') ? kpi('Approved expenses', naira(sum(exp)), '') + kpi('Balance', naira(sum(inc) - sum(exp)), sum(inc) - sum(exp) >= 0 ? '<span class="up">Surplus</span>' : '<span class="down">Deficit</span>') : ''}${kpi('Given online', naira(sum(online)), `${online.length} gifts`)}</div>
+  <div class="grid cols-2 gap">
+    <section class="panel"><h2>By category</h2>${hbars(Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([l, v]) => ({ l, v })), naira)}</section>
+    <section class="panel"><h2>Last 6 months</h2>${barChart(groups, has('expenses') ? [{ key: 'a', label: 'Income', color: 'var(--accent)' }, { key: 'b', label: 'Approved expenses', color: 'var(--gold)' }] : [{ key: 'a', label: 'Income', color: 'var(--accent)' }], { fmt: v => '₦' + compact(v), label: 'Monthly income and expenses' })}</section>
+  </div>
+  <section class="panel gap"><h2>Online giving</h2><p class="muted" style="margin:0">${has('online') ? 'In the production app, members give through a Paystack or Flutterwave link. Each payment is matched to the member automatically, and a receipt goes out on WhatsApp. In this prototype, record online gifts with the method “Online (Paystack)”.' : 'Online giving through Paystack or Flutterwave comes with the Standard plan.'}</p></section>`;
+}
+function givingIncome() {
+  const list = all('income').filter(inBranch).filter(i => monthOf(i.date) === S.gMonth).sort(byDateDesc);
+  return `<div class="toolbar">${monthPicker()}<span class="muted small">${list.length} records · ${naira(sum(list))}</span></div>
+  <section class="panel">${list.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Given by</th><th class="hide-sm">Method</th><th class="num">Amount</th><th></th></tr></thead><tbody>
+    ${list.map(i => { const m = i.memberId && D.members[i.memberId]; return `<tr ${canFin() ? `class="click" data-act="editIncome" data-id="${esc(i.id)}"` : ''}><td>${fmtShort(i.date)}</td><td>${esc(i.category)}${i.source === 'count' ? ' ' + pill('From count', 'accent') : ''}</td><td>${m ? esc(fullName(m)) : `<span class="muted">${esc(i.note || 'General collection')}</span>`}</td><td class="hide-sm">${esc(i.method || '')}</td><td class="num"><b>${naira(i.amount)}</b></td><td class="num">${m ? `<button class="btn sm" data-act="receipt" data-id="${esc(i.id)}">Receipt</button>` : ''}</td></tr>`; }).join('')}
+  </tbody></table></div>` : emptyBox('No giving recorded for this month.', canFin() ? `<button class="btn primary" data-act="newIncome">Record giving</button>` : '')}</section>`;
+}
+function givingExpenses() {
+  const list = all('expenses').filter(inBranch).filter(e => monthOf(e.date) === S.gMonth).sort(byDateDesc);
+  const pending = all('expenses').filter(inBranch).filter(e => e.status === 'Pending');
+  return `<div class="toolbar">${monthPicker()}<span class="muted small">${pending.length} waiting for approval overall</span></div>
+  <section class="panel">${list.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th class="num">Amount</th><th>Status</th><th></th></tr></thead><tbody>
+  ${list.map(e => `<tr><td>${fmtShort(e.date)}</td><td>${esc(e.category)}</td><td>${esc(e.desc || '')}<br><span class="muted small">Requested by ${esc(e.requestedBy || '—')}${e.decidedBy ? ' · ' + esc(e.status.toLowerCase()) + ' by ' + esc(e.decidedBy) : ''}</span></td><td class="num"><b>${naira(e.amount)}</b></td><td>${pill(e.status, e.status === 'Approved' ? 'ok' : e.status === 'Rejected' ? 'bad' : 'warn')}</td>
+    <td class="num">${e.status === 'Pending' && canApprove() ? `<button class="btn sm" data-act="decideExp" data-id="${esc(e.id)}" data-d="Approved">Approve</button> <button class="btn sm danger" data-act="decideExp" data-id="${esc(e.id)}" data-d="Rejected">Reject</button>` : ''}</td></tr>`).join('')}
+  </tbody></table></div>` : emptyBox('No expenses for this month.', canFin() ? `<button class="btn primary" data-act="newExpense">Add expense</button>` : '')}
+  <p class="muted small" style="margin:12px 0 0">Finance records requests. The church admin or pastor approves them. Every decision goes into the activity log.</p></section>`;
+}
+function givingCounts() {
+  const list = all('counts').filter(inBranch).sort(byDateDesc).slice(0, 30);
+  return `<div class="toolbar">${canFin() ? `<button class="btn primary" data-act="newCount">${icon('plus', 16)} New count sheet</button>` : ''}<span class="muted small">At least 2 counters must sign before a count can go into the books.</span></div>
+  <section class="panel">${list.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Service</th><th>Category</th><th class="num">Total</th><th>Signed</th><th>Status</th><th></th></tr></thead><tbody>
+  ${list.map(c => { const signed = (c.counters || []).filter(x => x.signed && x.name).length; return `<tr ${!c.posted && canFin() ? `class="click" data-act="editCount" data-id="${esc(c.id)}"` : ''}><td>${fmtShort(c.date)}</td><td>${esc(c.service)}</td><td>${esc(c.category)}</td><td class="num"><b>${naira(c.total)}</b></td><td>${signed} of ${(c.counters || []).filter(x => x.name).length || 3}</td><td>${c.posted ? pill('Posted to income', 'ok') : c.status === 'Verified' ? pill('Verified', 'accent') : pill('Awaiting sign-off', 'warn')}</td>
+  <td class="num">${c.status === 'Verified' && !c.posted && canFin() ? `<button class="btn sm primary" data-act="postCount" data-id="${esc(c.id)}">Post to income</button>` : ''}</td></tr>`; }).join('')}
+  </tbody></table></div>` : emptyBox('No count sheets yet.', canFin() ? `<button class="btn primary" data-act="newCount">Start a count</button>` : '')}</section>`;
+}
+function incomeForm(id) {
+  const st = ST(); const i = id ? D.income[id] : { date: today(), category: st.incomeCats[0], method: 'Cash' };
+  const m = i.memberId && D.members[i.memberId];
+  const body = `<input type="hidden" name="id" value="${esc(id || '')}"><div class="form-grid">
+    <div class="field"><label for="i-date">Date</label><input class="input" type="date" id="i-date" name="date" value="${esc(i.date)}"></div>
+    <div class="field"><label for="i-cat">Category</label><select class="input" id="i-cat" name="category">${st.incomeCats.map(c => `<option ${c === i.category ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
+    <div class="field"><label for="i-amt">Amount (₦)</label><input class="input" id="i-amt" name="amount" inputmode="numeric" value="${esc(i.amount || '')}" placeholder="e.g. 25000"></div>
+    <div class="field"><label for="i-method">Method</label><select class="input" id="i-method" name="method">${METHODS.map(x => `<option ${x === i.method ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+    <div class="field"><label for="i-member">Member (leave blank for a general collection)</label><input class="input" id="i-member" name="member" list="mem-list" value="${esc(m ? fullName(m) : '')}" autocomplete="off"><datalist id="mem-list">${members().map(x => `<option value="${esc(fullName(x))}">`).join('')}</datalist></div>
+    <div class="field"><label for="i-note">Note</label><input class="input" id="i-note" name="note" value="${esc(i.note || '')}" placeholder="e.g. Sunday first service"></div>
+  </div>`;
+  formModal('income', id ? 'Edit giving record' : 'Record giving', body, 'Save', { left: id ? `<button class="btn danger left" data-act="deleteIncome" data-id="${esc(id)}">Delete</button>` : '' });
+}
+function expenseForm() {
+  const st = ST();
+  const body = `<div class="form-grid">
+    <div class="field"><label for="e-date">Date</label><input class="input" type="date" id="e-date" name="date" value="${today()}"></div>
+    <div class="field"><label for="e-cat">Category</label><select class="input" id="e-cat" name="category">${st.expenseCats.map(c => `<option>${esc(c)}</option>`).join('')}</select></div>
+    <div class="field"><label for="e-amt">Amount (₦)</label><input class="input" id="e-amt" name="amount" inputmode="numeric"></div>
+  </div><div class="field"><label for="e-desc">What is it for?</label><input class="input" id="e-desc" name="desc" placeholder="e.g. Diesel for Sunday service generator"></div>`;
+  formModal('expense', 'Request an expense', body, 'Submit for approval');
+}
+function countForm(id) {
+  const st = ST(); const c = id ? D.counts[id] : { date: today(), service: st.serviceTypes[0], category: 'Offering', denoms: {}, counters: [{}, {}, {}] };
+  const counters = [0, 1, 2].map(k => (c.counters || [])[k] || {});
+  const body = `<input type="hidden" name="id" value="${esc(id || '')}"><div class="form-grid">
+    <div class="field"><label for="k-date">Date</label><input class="input" type="date" id="k-date" name="date" value="${esc(c.date)}"></div>
+    <div class="field"><label for="k-svc">Service</label><select class="input" id="k-svc" name="service">${st.serviceTypes.map(t => `<option ${t === c.service ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
+    <div class="field"><label for="k-cat">Category</label><select class="input" id="k-cat" name="category">${st.incomeCats.map(t => `<option ${t === c.category ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
+  </div>
+  <div class="field"><span class="lbl">Notes counted (number of each note)</span><div class="denoms">${DENOMS.map(d => `<label class="denom"><b>₦${num(d)} notes</b><input class="input" type="number" min="0" inputmode="numeric" name="d${d}" data-denom="${d}" value="${esc((c.denoms || {})[d] || '')}"><small id="dl-${d}">${naira(d * ((c.denoms || {})[d] || 0))}</small></label>`).join('')}</div></div>
+  <div class="field"><label for="k-coins">Coins and other (₦)</label><input class="input" id="k-coins" name="coins" inputmode="numeric" value="${esc(c.coins || '')}" data-denom="1"></div>
+  <div class="total-line"><span>Total</span><span id="cnt-total">${naira(c.total || 0)}</span></div>
+  <div class="field"><span class="lbl">Counters sign off (at least 2)</span>${counters.map((x, k) => `<div class="toolbar" style="margin:0"><input class="input" name="cn${k}" placeholder="Counter ${k + 1} name" value="${esc(x.name || '')}" style="flex:1 1 180px"><label class="checks"><label><input type="checkbox" name="cs${k}" value="1" ${x.signed ? 'checked' : ''}>I confirm this count</label></label></div>`).join('')}</div>`;
+  formModal('count', id ? 'Edit count sheet' : 'Offering count sheet', body, 'Save count', { wide: true, left: id ? `<button class="btn danger left" data-act="deleteCount" data-id="${esc(id)}">Delete</button>` : '' });
+}
+
+/* ---------- Messages ---------- */
+function audienceOptions() {
+  const st = ST();
+  return [['all', 'All active members'], ['workers', 'Workers & ministers'], ['firsttimers', 'First-timers'], ['absentees', 'Absentees (missed 3 services)'], ['birthdays', 'Birthdays in the next 7 days'],
+    ...st.departments.map(d => ['dept:' + d, 'Department: ' + d]), ...['Member', 'Regular attender', 'Inactive'].map(s => ['status:' + s, 'Status: ' + s])];
+}
+function audience(key) {
+  const ms = members().filter(m => !GONE.includes(m.status) && (m.phone || m.guardianPhone));
+  if (key === 'all') return ms.filter(m => m.status !== 'Inactive' && !m.isChild);
+  if (key === 'workers') return ms.filter(m => ['Worker', 'Minister'].includes(m.status));
+  if (key === 'firsttimers') return ms.filter(m => m.status === 'First-timer');
+  if (key === 'absentees') { const ids = new Set(absentees().map(a => a.m.id)); return ms.filter(m => ids.has(m.id)); }
+  if (key === 'birthdays') { const ids = new Set(celebrations(7).filter(c => c.label === 'Birthday').map(c => c.m.id)); return ms.filter(m => ids.has(m.id)); }
+  if (key.startsWith('dept:')) return ms.filter(m => (m.depts || []).includes(key.slice(5)));
+  if (key.startsWith('status:')) return ms.filter(m => m.status === key.slice(7));
+  return [];
+}
+V.comms = () => {
+  if (!has('comms')) return `<div class="page-head"><div><h1 class="page">Messages</h1></div></div>` + gate('comms', 'Messaging');
+  const st = ST(); if (!S.cText) S.cText = st.templates[S.cTpl] || '';
+  const aud = audience(S.cAud);
+  const log = all('messages').filter(inBranch).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).slice(0, 8);
+  const bdays = celebrations(7).filter(c => c.label === 'Birthday');
+  return `<div class="page-head"><div><h1 class="page">Messages</h1><p class="sub">Reach people on WhatsApp, where they already are.</p></div></div>
+  <div class="grid cols-2">
+    <section class="panel"><h2>New message</h2><div class="stack">
+      <div class="form-grid"><div class="field"><label for="c-aud">Send to</label><select class="input" id="c-aud" data-ui="cAud">${audienceOptions().map(([k, l]) => `<option value="${esc(k)}" ${S.cAud === k ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+      <div class="field"><label for="c-tpl">Start from</label><select class="input" id="c-tpl" data-act-change="pickTpl">${Object.entries(TEMPLATE_NAMES).map(([k, l]) => `<option value="${k}" ${S.cTpl === k ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="c-text">Message</label><textarea class="input" id="c-text" data-ui="cText" data-no-render rows="6">${esc(S.cText)}</textarea><span class="muted small">Use {first_name}, {name}, {church} or {pastor} and each person gets their own version.</span></div>
+      <div class="split"><span><b>${num(aud.length)}</b> recipients with a phone number</span><button class="btn primary" data-act="prepareMsgs" ${aud.length ? '' : 'disabled'}>${icon('chat', 16)} Prepare messages</button></div>
+      <p class="muted small" style="margin:0">${has('bulk') ? 'In the production app, this sends automatically through the WhatsApp Business API or SMS. The prototype opens each chat for you.' : 'On Basic you send messages one by one. Bulk sending through the WhatsApp API or SMS comes with the Standard plan.'}</p>
+    </div></section>
+    <section class="panel"><h2>Birthdays this week</h2>${bdays.length ? `<div class="list">${bdays.map(c => `<div class="row"><span class="grow">${who(c.m, c.diff === 0 ? '<b>Today</b>' : fmtShort(c.date))}</span>${waBtn(c.m.phone, fillTpl(st.templates.birthday, c.m), 'Send wish')}</div>`).join('')}</div>` : emptyBox('No birthdays in the next 7 days.')}
+      <h2 style="margin-top:20px">Recently sent</h2>${log.length ? `<div class="list">${log.map(l => `<div class="row"><span class="grow"><b>${esc(l.audience)}</b><br><span class="muted small">${esc((l.text || '').slice(0, 90))}${(l.text || '').length > 90 ? '…' : ''}</span></span><span class="small muted">${num(l.count)} people · ${fmtShort(l.date)}</span></div>`).join('')}</div>` : emptyBox('Messages you send are logged here.')}
+    </section>
+  </div>
+  <section class="panel gap"><h2>Message templates <span class="muted">used for birthdays, follow-up and absentees across the app</span></h2>
+    <form data-form="templates" class="grid cols-2">${Object.entries(TEMPLATE_NAMES).map(([k, l]) => `<div class="field"><label for="t-${k}">${esc(l)}</label><textarea class="input" id="t-${k}" name="${k}" rows="3" ${S.role === 'admin' ? '' : 'readonly'}>${esc(st.templates[k])}</textarea></div>`).join('')}
+    ${S.role === 'admin' ? `<div><button class="btn" type="submit">Save templates</button></div>` : ''}</form></section>`;
+};
+
+/* ---------- Children's check-in ---------- */
+V.children = () => {
+  const head = `<div class="page-head"><div><h1 class="page">Children’s check-in</h1><p class="sub">Each child goes home only with the person holding the matching pickup code.</p></div>${has('children') ? `<div class="actions"><button class="btn primary" data-act="checkInChild">${icon('plus', 16)} Check in a child</button></div>` : ''}</div>`;
+  if (!has('children')) return head + gate('children', 'Children’s check-in');
+  const todays = all('checkins').filter(inBranch).filter(c => c.date === today());
+  const inNow = todays.filter(c => !c.outAt).sort((a, b) => (a.inAt || '').localeCompare(b.inAt || ''));
+  const out = todays.filter(c => c.outAt).sort((a, b) => (b.outAt || '').localeCompare(a.outAt || ''));
+  const kidCard = c => { const k = D.members[c.childId] || { first: c.childName }; return `<div class="kid"><div class="split"><b>${esc(fullName(k))}</b>${pill(c.cls || 'Class', 'accent')}</div>${k.allergy ? `<span class="pill warn">${icon('alert', 13)} ${esc(k.allergy)}</span>` : ''}<span class="small muted">Dropped by ${esc(c.guardian || '—')} at ${fmtTime(c.inAt)}</span><div class="split"><span class="code">•••${esc(String(c.code).slice(-1))}</span><button class="btn sm primary" data-act="releaseChild" data-id="${esc(c.id)}">Release</button></div></div>`; };
+  return head + `<div class="grid kpis">${kpi('In class now', num(inNow.length), '')}${kpi('Picked up today', num(out.length), '')}${kpi('With allergy notes', num(inNow.filter(c => (D.members[c.childId] || {}).allergy).length), 'Shown to teachers')}${kpi('Children on record', num(members().filter(m => m.isChild).length), '')}</div>
+  <section class="panel gap"><h2>In class now <span class="muted">${fmtDate(today())}</span></h2>${inNow.length ? `<div class="kids">${inNow.map(kidCard).join('')}</div>` : emptyBox('No children checked in right now.', `<button class="btn primary" data-act="checkInChild">Check in a child</button>`)}</section>
+  <section class="panel gap"><h2>Picked up today</h2>${out.length ? `<div class="table-wrap"><table><thead><tr><th>Child</th><th>Class</th><th>Dropped by</th><th>Collected by</th><th class="num">Time out</th></tr></thead><tbody>${out.map(c => `<tr><td>${esc(fullName(D.members[c.childId] || { first: c.childName }))}</td><td>${esc(c.cls || '')}</td><td>${esc(c.guardian || '')}</td><td>${esc(c.outBy || '')}</td><td class="num">${fmtTime(c.outAt)}</td></tr>`).join('')}</tbody></table></div>` : emptyBox('No pickups yet today.')}</section>`;
+};
+function checkInForm() {
+  const inIds = new Set(all('checkins').filter(c => c.date === today() && !c.outAt).map(c => c.childId));
+  const kids = members().filter(m => m.isChild && !inIds.has(m.id)).sort((a, b) => fullName(a).localeCompare(fullName(b)));
+  const body = `<div class="field"><label for="ch-child">Child</label><select class="input" id="ch-child" name="childId"><option value="">— New child (fill in below) —</option>${kids.map(k => `<option value="${esc(k.id)}">${esc(fullName(k))}${k.allergy ? ' ⚠ ' + esc(k.allergy) : ''}</option>`).join('')}</select></div>
+  <div class="form-grid" id="ch-new">
+    <div class="field"><label for="ch-name">New child’s name</label><input class="input" id="ch-name" name="childName"></div>
+    <div class="field"><label for="ch-allergy">Allergy / special care</label><input class="input" id="ch-allergy" name="allergy"></div>
+  </div>
+  <div class="form-grid">
+    <div class="field"><label for="ch-class">Class</label><select class="input" id="ch-class" name="cls">${KID_CLASSES.map(c => `<option>${esc(c)}</option>`).join('')}</select></div>
+    <div class="field"><label for="ch-guard">Dropped off by</label><input class="input" id="ch-guard" name="guardian" placeholder="Parent or guardian name"></div>
+    <div class="field"><label for="ch-gphone">Guardian phone</label><input class="input" id="ch-gphone" name="guardianPhone" inputmode="tel"></div>
+  </div>`;
+  formModal('checkin', 'Check in a child', body, 'Check in and get code');
+}
+
+/* ---------- Reports ---------- */
+V.reports = () => {
+  const head = `<div class="page-head"><div><h1 class="page">Reports</h1><p class="sub">${esc(scopeLabel())} · for board meetings, HQ returns and planning.</p></div>
+    <div class="actions">${has('reports') ? `<div class="seg">${[['1', 'This month'], ['3', '3 months'], ['12', '12 months']].map(([k, l]) => `<button class="${S.period === k ? 'on' : ''}" data-act="period" data-p="${k}">${l}</button>`).join('')}</div>` : ''}</div></div>`;
+  if (!has('reports')) return head + gate('reports', 'Reports and exports');
+  const st = ST(); const n = +S.period; const start = shiftMonth(thisMonth(), -(n - 1)) + '-01';
+  const inP = d => d && d >= start;
+  const newM = members().filter(m => inP(m.joined) && m.status !== 'First-timer');
+  const svcs = all('services').filter(inBranch).filter(s => inP(s.date));
+  const sundays = svcs.filter(s => s.type === st.serviceTypes[0]);
+  const inc = all('income').filter(inBranch).filter(i => inP(i.date)); const exp = all('expenses').filter(inBranch).filter(e => inP(e.date) && e.status === 'Approved');
+  const ft = members().filter(m => m.followUp && inP(m.followUp.visited)); const conv = ft.filter(m => ['Member', 'Department'].includes(m.followUp.stage));
+  const cats = {}; inc.forEach(i => cats[i.category] = (cats[i.category] || 0) + (+i.amount || 0));
+  const depts = st.departments.map(d => ({ l: d, v: members().filter(m => (m.depts || []).includes(d) && !GONE.includes(m.status)).length })).sort((a, b) => b.v - a.v);
+  const statuses = STATUSES.map(s => ({ l: s, v: members().filter(m => m.status === s).length })).filter(x => x.v);
+  const growth = lastMonths(12).map(m => ({ l: monthLabel(m), a: members().filter(x => monthOf(x.joined) === m && x.status !== 'First-timer').length, b: members().filter(x => x.followUp && monthOf(x.followUp.visited) === m).length }));
+  const mAtt = lastMonths(n).map(m => { const ss = sundays.filter(s => monthOf(s.date) === m); return { m, avg: ss.length ? Math.round(sum(ss, s => s.total) / ss.length) : 0, n: ss.length, hi: ss.length ? Math.max(...ss.map(s => s.total)) : 0 }; });
+  return head + `<div class="grid kpis">${kpi('Average Sunday attendance', num(sundays.length ? sum(sundays, s => s.total) / sundays.length : 0), `${sundays.length} services`)}${kpi('New members', num(newM.length), '')}${kpi('First-timers', num(ft.length), `${conv.length} became members`)}${canFin() || S.role === 'pastor' ? kpi('Income', naira(sum(inc)), `Expenses ${naira(sum(exp))}`) : ''}</div>
+  <div class="grid cols-2 gap">
+    <section class="panel"><h2>Growth <span class="muted">last 12 months</span></h2>${barChart(growth, [{ key: 'a', label: 'New members', color: 'var(--accent)' }, { key: 'b', label: 'First-timers', color: 'var(--gold)' }], { fmt: v => num(v), label: 'New members and first-timers per month' })}</section>
+    <section class="panel"><h2>Monthly attendance</h2><div class="table-wrap"><table><thead><tr><th>Month</th><th class="num">Services</th><th class="num">Average</th><th class="num">Highest</th></tr></thead><tbody>${mAtt.map(r => `<tr><td>${monthLabel(r.m, true)}</td><td class="num">${r.n}</td><td class="num"><b>${num(r.avg)}</b></td><td class="num">${num(r.hi)}</td></tr>`).join('')}</tbody></table></div></section>
+    ${canFin() || S.role === 'pastor' ? `<section class="panel"><h2>Giving by category</h2>${hbars(Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([l, v]) => ({ l, v })), naira)}</section>` : ''}
+    <section class="panel"><h2>Department strength</h2>${hbars(depts.filter(d => d.v))}</section>
+    <section class="panel"><h2>Membership by status</h2>${hbars(statuses)}</section>
+    <section class="panel"><h2>Pastor’s weekly summary</h2><textarea class="input" id="wk-sum" rows="8" readonly>${esc(weeklySummary())}</textarea><div class="toolbar" style="margin:10px 0 0"><button class="btn" data-act="copySummary">${icon('copy', 15)} Copy for WhatsApp</button></div></section>
+  </div>
+  <section class="panel gap"><h2>Export to Excel</h2><div class="toolbar" style="margin:0">
+    <button class="btn" data-act="exportMembers">${icon('download', 15)} Members</button><button class="btn" data-act="exportAttendance">${icon('download', 15)} Attendance</button>
+    ${canFin() || S.role === 'pastor' ? `<button class="btn" data-act="exportIncome">${icon('download', 15)} Income</button><button class="btn" data-act="exportExpenses">${icon('download', 15)} Expenses</button>` : ''}</div></section>`;
+};
+function weeklySummary() {
+  const st = ST(); const from = addDays(today(), -6);
+  const svcs = all('services').filter(inBranch).filter(s => s.date >= from).sort(byDateDesc);
+  const inc = sum(all('income').filter(inBranch).filter(i => i.date >= from));
+  const ft = members().filter(m => m.followUp && m.followUp.visited >= from).length;
+  const abs = absentees().length; const due = followDue().length;
+  return `${st.name}${isMulti() && S.branch !== 'all' ? ' (' + branchName(S.branch) + ')' : ''}: week ending ${fmtDate(today())}\n\n` +
+    (svcs.length ? svcs.map(s => `• ${s.type} (${fmtShort(s.date)}): ${num(s.total)} (${num(s.men)} men, ${num(s.women)} women, ${num(s.children)} children)`).join('\n') : '• No services recorded this week') +
+    `\n• First-timers: ${ft}\n• Giving recorded: ${naira(inc)}\n• Members missing 3+ services: ${abs}\n• Follow-ups due: ${due}\n\nSent from Shepherd Desk`;
+}
+
+/* ---------- Branches (multi-branch only) ---------- */
+function remitDue(branchId, month) {
+  const rates = ST().remitRates;
+  return all('income').filter(i => (i.branchId || 'main') === branchId && monthOf(i.date) === month).reduce((a, i) => a + (+i.amount || 0) * ((+rates[i.category] || 0) / 100), 0);
+}
+V.branches = () => {
+  const head = `<div class="page-head"><div><h1 class="page">Branches</h1><p class="sub">HQ view of every branch: people, giving and remittance.</p></div>${has('branches') && S.role === 'admin' ? `<div class="actions"><button class="btn primary" data-act="newBranch">${icon('plus', 16)} Add branch</button><button class="btn" data-act="newRemit">Record remittance</button></div>` : ''}</div>`;
+  if (!has('branches')) return head + gate('branches', 'Branch management');
+  const st = ST(); const m = thisMonth(); const mainType = st.serviceTypes[0];
+  const rows = branches().map(b => {
+    const mem = all('members').filter(x => (x.branchId || 'main') === b.id && !GONE.includes(x.status)).length;
+    const lastS = all('services').filter(s => (s.branchId || 'main') === b.id && s.type === mainType).sort(byDateDesc)[0];
+    const inc = sum(all('income').filter(i => (i.branchId || 'main') === b.id && monthOf(i.date) === m));
+    const due = b.hq ? 0 : remitDue(b.id, m); const paid = sum(all('remits').filter(r => r.branchId === b.id && r.month === m));
+    const bal = due - paid;
+    const status = b.hq ? pill('HQ') : due === 0 ? pill('Nothing due') : bal <= 0 ? pill('Paid', 'ok') : paid > 0 ? pill('Part paid', 'warn') : pill('Owing', 'bad');
+    return `<tr class="click" data-act="editBranch" data-id="${esc(b.id)}"><td><b>${esc(b.name)}</b><br><span class="muted small">${esc(b.pastor || 'No pastor posted')}</span></td><td class="num">${num(mem)}</td><td class="num">${lastS ? num(lastS.total) : '—'}</td><td class="num">${naira(inc)}</td><td class="num">${b.hq ? '—' : naira(due)}</td><td class="num">${b.hq ? '—' : naira(paid)}</td><td>${status}</td></tr>`;
+  }).join('');
+  const hist = all('remits').sort(byDateDesc).slice(0, 12);
+  return head + `<section class="panel"><h2>${monthLabel(m, true)} at a glance</h2><div class="table-wrap"><table><thead><tr><th>Branch</th><th class="num">Members</th><th class="num">Last Sunday</th><th class="num">Income</th><th class="num">Remittance due</th><th class="num">Paid</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div></section>
+  <div class="grid cols-2 gap">
+    <section class="panel"><h2>Remittance rates <span class="muted">% of each income category sent to HQ</span></h2>
+      <form data-form="rates" class="stack"><div class="form-grid">${st.incomeCats.map(c => `<div class="field"><label for="r-${esc(c)}">${esc(c)} %</label><input class="input" id="r-${esc(c)}" name="${esc(c)}" type="number" min="0" max="100" step="0.5" value="${esc(st.remitRates[c] || 0)}" ${S.role === 'admin' ? '' : 'readonly'}></div>`).join('')}</div>${S.role === 'admin' ? '<div><button class="btn" type="submit">Save rates</button></div>' : ''}</form></section>
+    <section class="panel"><h2>Remittance payments</h2>${hist.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Branch</th><th>For</th><th class="num">Amount</th></tr></thead><tbody>${hist.map(r => `<tr><td>${fmtShort(r.date)}</td><td>${esc(branchName(r.branchId))}</td><td>${monthLabel(r.month, true)}</td><td class="num">${naira(r.amount)}</td></tr>`).join('')}</tbody></table></div>` : emptyBox('No remittance payments recorded yet.')}</section>
+  </div>
+  <p class="muted small">Member and pastor transfers: open a member and change their branch. Open a branch to post a new pastor. Both are recorded with dates.</p>`;
+};
+function branchForm(id) {
+  const b = id && id !== 'main' ? D.branches[id] : id === 'main' ? branches()[0] : {};
+  const body = `<input type="hidden" name="id" value="${esc(id || '')}"><div class="form-grid">
+    <div class="field"><label for="b-name">Branch name</label><input class="input" id="b-name" name="name" value="${esc(b.name || '')}" placeholder="e.g. Akure"></div>
+    <div class="field"><label for="b-loc">Address</label><input class="input" id="b-loc" name="location" value="${esc(b.location || '')}"></div>
+    <div class="field"><label for="b-pastor">Pastor in charge</label><input class="input" id="b-pastor" name="pastor" value="${esc(b.pastor || '')}"></div>
+    <div class="field"><label for="b-phone">Branch phone</label><input class="input" id="b-phone" name="phone" value="${esc(b.phone || '')}" inputmode="tel"></div>
+  </div>${(b.postings || []).length ? `<div><b class="small">Pastor postings</b><div class="timeline" style="margin-top:6px">${b.postings.slice().reverse().map(p => `<div class="note">${esc(p.pastor)}<small>From ${fmtDate(p.date)}</small></div>`).join('')}</div></div>` : ''}`;
+  formModal('branch', id ? 'Edit ' + (b.name || 'branch') : 'Add a branch', body, id ? 'Save' : 'Add branch');
+}
+function remitForm() {
+  const body = `<div class="form-grid">
+    <div class="field"><label for="rm-b">Branch</label><select class="input" id="rm-b" name="branchId">${branches().filter(b => !b.hq).map(b => `<option value="${esc(b.id)}">${esc(b.name)}</option>`).join('')}</select></div>
+    <div class="field"><label for="rm-m">For month</label><input class="input" type="month" id="rm-m" name="month" value="${thisMonth()}"></div>
+    <div class="field"><label for="rm-a">Amount (₦)</label><input class="input" id="rm-a" name="amount" inputmode="numeric"></div>
+    <div class="field"><label for="rm-d">Date paid</label><input class="input" type="date" id="rm-d" name="date" value="${today()}"></div>
+    <div class="field"><label for="rm-r">Reference</label><input class="input" id="rm-r" name="ref" placeholder="Transfer reference"></div></div>`;
+  formModal('remit', 'Record remittance to HQ', body, 'Save payment');
+}
+
+/* ---------- Settings ---------- */
+V.settings = () => {
+  const st = ST(); const cur = st.plan;
+  const planCard = k => { const p = PLANS[k]; return `<div class="plan ${cur === k ? 'on' : ''}"><h3>${esc(p.name)}${cur === k ? pill('Current', 'accent') : ''}</h3><span class="muted small">${esc(p.blurb)} · <b>${esc(p.price)}</b></span><ul>${p.points.map(x => `<li>${esc(x)}</li>`).join('')}</ul>${cur === k ? '' : `<button class="btn ${PLANS[cur].fam === p.fam ? '' : 'primary'}" data-act="switchPlan" data-plan="${k}">${PLANS[cur].fam === 'single' && p.fam === 'multi' ? 'Switch on branches' : 'Switch to ' + esc(p.name)}</button>`}</div>`; };
+  const team = st.team || [];
+  const ex = COLS.filter(c => c !== 'settings').reduce((a, c) => a + all(c).filter(x => x.example).length, 0);
+  const log = all('audit').sort((a, b) => (b.at || '').localeCompare(a.at || '')).slice(0, 40);
+  return `<div class="page-head"><div><h1 class="page">Settings</h1><p class="sub">Church profile, plan, team and lists.</p></div></div>
+  <div class="grid cols-2">
+    <section class="panel"><h2>Church profile</h2><form data-form="profile" class="stack"><div class="form-grid">
+      <div class="field"><label for="p-name">Church name</label><input class="input" id="p-name" name="name" value="${esc(st.name)}"></div>
+      <div class="field"><label for="p-main">${st.multiBranch ? 'HQ / main branch name' : 'Location name'}</label><input class="input" id="p-main" name="mainBranch" value="${esc(st.mainBranch)}"></div>
+      <div class="field"><label for="p-pastor">Senior pastor</label><input class="input" id="p-pastor" name="pastor" value="${esc(st.pastor)}"></div>
+      <div class="field"><label for="p-addr">Address</label><input class="input" id="p-addr" name="address" value="${esc(st.address)}"></div>
+    </div><div><button class="btn" type="submit">Save profile</button></div></form></section>
+    <section class="panel"><h2>Branches</h2>${st.multiBranch ? `<p style="margin:0 0 10px">Branch features are on. <b>${branches().length}</b> locations, with <b>${esc(st.mainBranch)}</b> as HQ.</p><button class="btn" data-act="goto" data-route="branches">Manage branches</button>` : `<p style="margin:0 0 10px">You’re set up as <b>one church</b>, so branch menus stay hidden. When you plant a second location, add it here. All your members, giving and history stay as they are.</p><button class="btn primary" data-act="switchPlan" data-plan="network">${icon('branch', 16)} Add a branch</button>`}</section>
+  </div>
+  <section class="panel gap"><h2>Plan</h2><p class="muted" style="margin:0">Prototype: switching plans here doesn’t charge anything. Naira prices will be set after the pilot.</p>
+    <div class="fam-label">Single church plans</div><div class="grid plan-grid">${['starter', 'basic', 'standard', 'premium'].map(planCard).join('')}</div>
+    <div class="fam-label">Multi-branch plans</div><div class="grid plan-grid">${['network', 'enterprise'].map(planCard).join('')}</div></section>
+  <div class="grid cols-2 gap">
+    <section class="panel"><h2>Team & roles <span class="muted">${team.length} of ${plan().admins === Infinity ? 'unlimited' : plan().admins} admin seats</span></h2>
+      ${team.length ? `<div class="list">${team.map((t, i) => `<div class="row"><span class="grow"><b>${esc(t.name)}</b><br><span class="muted small">${esc(ROLES[t.role] ? ROLES[t.role].label : t.role)} ${t.phone ? '· ' + esc(t.phone) : ''}</span></span><button class="btn sm ghost danger" data-act="removeTeam" data-i="${i}">Remove</button></div>`).join('')}</div>` : emptyBox('Add the people who help run the church records.')}
+      <form data-form="team" class="toolbar" style="margin:12px 0 0"><input class="input" name="name" placeholder="Name" style="flex:1 1 140px" aria-label="Team member name"><input class="input" name="phone" placeholder="Phone" style="flex:1 1 110px" aria-label="Phone"><select class="input" name="role" aria-label="Role">${Object.entries(ROLES).filter(([k]) => has('roles') || ['admin', 'finance', 'secretary'].includes(k)).map(([k, r]) => `<option value="${k}">${esc(r.label)}</option>`).join('')}</select><button class="btn" type="submit">Add</button></form>
+      ${(typeof STORE !== 'undefined' && STORE && STORE.user.joinCode) ? `<div class="banner" style="margin:12px 0 0"><span class="grow">Your church code is <b>${esc(STORE.user.joinCode)}</b>. Team members create their own account, choose “Join with a code” and enter it.</span><button class="btn sm" data-act="copyCode">Copy code</button></div>` : ''}
+      <p class="muted small" style="margin:10px 0 0">Use “Viewing as” at the top to see the app the way each role does.${has('roles') ? '' : ' More roles (pastor, follow-up, usher) come with Standard.'}</p></section>
+    <section class="panel"><h2>Lists <span class="muted">one per line</span></h2><form data-form="lists" class="grid cols-2" style="gap:12px">
+      ${[['departments', 'Departments'], ['serviceTypes', 'Service types (first is the main service)'], ['incomeCats', 'Giving categories'], ['expenseCats', 'Expense categories']].map(([k, l]) => `<div class="field"><label for="l-${k}">${esc(l)}</label><textarea class="input" id="l-${k}" name="${k}" rows="6">${esc((st[k] || []).join('\n'))}</textarea></div>`).join('')}
+      <div><button class="btn" type="submit">Save lists</button></div></form></section>
+  </div>
+  <div class="grid cols-2 gap">
+    <section class="panel"><h2>Activity log</h2>${has('audit') ? (log.length ? `<div class="list">${log.map(a => `<div class="row"><span class="grow"><b>${esc(a.action)}</b><br><span class="muted small">${esc(a.detail || '')}</span></span><span class="small muted">${esc(ROLES[a.role] ? ROLES[a.role].label : a.role || '')} · ${a.at ? new Date(a.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</span></div>`).join('')}</div>` : emptyBox('Changes to money, members and settings will appear here.')) : `<p class="muted" style="margin:0">A record of who changed finance, member and plan records, and when. It comes with the Premium and multi-branch plans.</p>`}</section>
+    <section class="panel"><h2>Your data</h2><div class="stack">
+      <p class="muted" style="margin:0">${MODE === 'db' ? 'Records are saved online and shared with everyone you share this app with.' : 'Demo mode: records are saved in this browser only.'}</p>
+      <div class="toolbar" style="margin:0"><button class="btn" data-act="exportAll">${icon('download', 15)} Export everything (JSON)</button><button class="btn" data-act="importMembers">${icon('upload', 15)} Import members (CSV)</button></div>
+      ${ex ? `<div class="banner" style="margin:0"><span class="grow"><b>${num(ex)} example records</b> are loaded to show how the app works.</span><button class="btn sm danger" data-act="clearExample">Clear example data</button></div>` : ''}
+    </div></section>
+  </div>`;
+};
+/* ---------- Rendering ---------- */
+let rq = 0, deferred = false, qT = 0;
+function scheduleRender() { if (rq) return; rq = requestAnimationFrame(() => { rq = 0; render(); }); }
+function render() {
+  const app = $('#app'); const a = document.activeElement;
+  if (a && app.contains(a) && a.matches('input,textarea,select') && a.closest('form[data-form]') && !a.hasAttribute('data-ui')) { deferred = true; return; }
+  const id = a && app.contains(a) ? a.id : ''; let s = null, e = null;
+  try { s = a.selectionStart; e = a.selectionEnd; } catch (_) { /* not a text field */ }
+  app.innerHTML = shell();
+  if (id) { const el = document.getElementById(id); if (el && app.contains(el)) { el.focus({ preventScroll: true }); try { if (s != null) el.setSelectionRange(s, e); } catch (_) { /* ignore */ } } }
+}
+document.addEventListener('focusout', () => { if (deferred) { deferred = false; setTimeout(scheduleRender, 0); } });
+
+/* ---------- Helpers for handlers ---------- */
+const A = {}, F = {};
+function formObj(f) { const o = {}; new FormData(f).forEach((v, k) => { o[k] = typeof v === 'string' ? v : ''; }); return o; }
+const val = (o, k) => String(o[k] || '').trim();
+const money = v => parseFloat(String(v || '').replace(/[₦,\s]/g, '')) || 0;
+let PENDING = null;
+function confirmBox(title, msgHtml, label, fn, danger = true) { PENDING = fn; openModal(title, `<p style="margin:0">${msgHtml}</p>`, `<button class="btn" data-act="closeModal">Cancel</button><button class="btn ${danger ? 'danger' : 'primary'}" data-act="confirmYes">${esc(label)}</button>`, { noFocus: true }); }
+const splitName = n => { const p = String(n || '').trim().split(/\s+/); return { first: p[0] || '', last: p.slice(1).join(' ') }; };
+const roleLabel = () => (ROLES[S.role] || ROLES.admin).label;
+
+A.closeModal = () => closeModal();
+A.confirmYes = async () => { const fn = PENDING; PENDING = null; closeModal(); if (fn) await fn(); };
+A.submitModal = () => { const f = $('#mf'); if (f) f.requestSubmit(); };
+A.toggleNav = () => { S.navOpen = !S.navOpen; render(); };
+A.goto = el => { S.route = el.dataset.route; if (el.dataset.tab) S.gTab = el.dataset.tab; S.navOpen = false; savePrefs(); closeModal(); render(); window.scrollTo(0, 0); };
+A.copyFrom = el => { const t = $(el.dataset.src); if (t) copyText(t.value); };
+A.copyExport = () => copyText($('#exp-text').value);
+A.copyCode = () => { if (typeof STORE !== 'undefined' && STORE) copyText(STORE.user.joinCode); };
+A.signOut = () => { if (typeof STORE === 'undefined' || !STORE) return; confirmBox('Sign out?', 'You can sign back in with your email and password. Nothing is lost.', 'Sign out', () => STORE.signOut(), false); };
+
+/* ---------- Setup & settings ---------- */
+F.setup = async f => {
+  const o = formObj(f); if (!val(o, 'name')) return formErr('Enter your church’s name.');
+  const multi = o.branches === 'yes';
+  await saveSettings({ name: val(o, 'name'), mainBranch: val(o, 'mainBranch') || 'Main church', pastor: val(o, 'pastor'), address: val(o, 'address'), plan: multi ? 'network' : 'starter', multiBranch: multi, team: [{ name: val(o, 'pastor') || 'Church admin', role: 'admin' }] });
+  S.route = multi ? 'branches' : 'dashboard'; S.role = 'admin'; savePrefs(); toast(multi ? 'Your church is set up. Add your branches next.' : 'Your church is set up');
+};
+F.profile = async f => { const o = formObj(f); if (!val(o, 'name')) return toast('Church name can’t be empty.', 'bad'); await saveSettings({ name: val(o, 'name'), mainBranch: val(o, 'mainBranch') || 'Main church', pastor: val(o, 'pastor'), address: val(o, 'address') }); toast('Profile saved'); };
+F.lists = async f => {
+  const o = formObj(f); const patch = {};
+  for (const k of ['departments', 'serviceTypes', 'incomeCats', 'expenseCats']) { const arr = [...new Set(String(o[k] || '').split('\n').map(x => x.trim()).filter(Boolean))]; if (!arr.length) return toast('Each list needs at least one item.', 'bad'); patch[k] = arr; }
+  await saveSettings(patch); toast('Lists saved');
+};
+F.templates = async f => { const o = formObj(f); const t = {}; Object.keys(TEMPLATE_NAMES).forEach(k => t[k] = val(o, k) || DEFAULT_SETTINGS.templates[k]); await saveSettings({ templates: t }); S.cText = ''; toast('Templates saved'); };
+F.team = async f => {
+  const o = formObj(f); if (!val(o, 'name')) return toast('Enter the team member’s name.', 'bad');
+  const team = clone(ST().team || []); if (team.length >= plan().admins) return toast(`The ${plan().name} plan includes ${plan().admins} admin seat${plan().admins === 1 ? '' : 's'}. Upgrade for more.`, 'bad');
+  team.push({ name: val(o, 'name'), phone: val(o, 'phone'), role: o.role || 'secretary' }); await saveSettings({ team }); audit('Team member added', `${val(o, 'name')} as ${ROLES[o.role] ? ROLES[o.role].label : o.role}`); toast('Team member added');
+};
+A.removeTeam = async el => { const team = clone(ST().team || []); const [x] = team.splice(+el.dataset.i, 1); await saveSettings({ team }); if (x) audit('Team member removed', x.name); };
+A.switchPlan = el => {
+  const k = el.dataset.plan; const target = PLANS[k]; const st = ST(); const cur = PLANS[st.plan] || PLANS.starter;
+  const count = all('members').filter(m => !GONE.includes(m.status)).length;
+  if (target.fam === 'multi' && !st.multiBranch) {
+    return confirmBox('Switch on branches?', `<b>${esc(st.name)}</b> becomes the HQ (main branch) and all existing records stay with it. You’ll get the HQ dashboard, remittance tracking and member transfers on the <b>${esc(target.name)}</b> plan.`, 'Switch on branches', async () => {
+      await saveSettings({ plan: k, multiBranch: true }); audit('Plan changed', `${cur.name} → ${target.name}`); S.branch = 'all'; S.route = 'branches'; savePrefs(); render(); toast('Branch features are on. Add your first branch.');
+      setTimeout(() => branchForm(), 200);
+    }, false);
+  }
+  if (target.fam === 'single' && st.multiBranch) {
+    if (all('branches').length) return toast('Remove your other branches first. Then you can switch back to a single-church plan.', 'bad');
+  }
+  const over = count > target.limit;
+  confirmBox(`Switch to ${target.name}?`, `${over ? `<b>You have ${num(count)} members, above this plan’s ${num(target.limit)} limit.</b> Nothing is deleted, but you’ll be asked to upgrade. ` : ''}Features not included in ${esc(target.name)} will be locked. All records are kept.`, 'Switch plan', async () => {
+    await saveSettings({ plan: k, multiBranch: target.fam === 'multi' }); audit('Plan changed', `${cur.name} → ${target.name}`); toast(`You’re now on the ${target.name} plan`);
+  }, false);
+};
+A.exportAll = () => download('shepherd-desk-export.json', JSON.stringify(D, null, 2), 'application/json');
+A.clearExample = () => {
+  const n = COLS.filter(c => c !== 'settings').reduce((a, c) => a + all(c).filter(x => x.example).length, 0);
+  confirmBox('Clear example data?', `This permanently deletes the <b>${num(n)} example records</b> (members, services, giving and more). Your church profile, plan, team and lists stay.`, 'Clear example data', async () => {
+    toast('Clearing example records…');
+    for (const c of COLS) { if (c === 'settings') continue; for (const x of all(c).filter(r => r.example)) await del(c, x.id); }
+    await saveSettings({ example: false }); audit('Example data cleared', `${n} records`); toast('Example data cleared. You’re ready to add your own records.');
+  });
+};
+
+/* ---------- Members ---------- */
+A.openMember = el => showMember(el.dataset.id);
+A.newMember = () => memberForm();
+A.editMember = el => memberForm(el.dataset.id);
+F.member = async f => {
+  const o = formObj(f); if (!val(o, 'first')) return formErr('Enter a first name.');
+  const isChild = !!f.querySelector('[name=isChild]:checked');
+  if (!val(o, 'phone') && !isChild) return formErr('Enter a phone number so the church can reach them.');
+  const prev = o.id ? D.members[o.id] : null; const ph = intlPhone(o.phone);
+  if (ph && !isChild && !f.dataset.dupOk) { const dup = all('members').find(x => x.id !== o.id && !x.isChild && intlPhone(x.phone) === ph); if (dup) { f.dataset.dupOk = '1'; return formErr(`${fullName(dup)} already uses this number. Press Save again to keep both.`); } }
+  const m = prev ? clone(prev) : { id: uid(), branchId: curBranchId() };
+  ['first', 'last', 'phone', 'gender', 'status', 'dob', 'anniversary', 'joined', 'household', 'cell', 'email', 'occupation', 'address', 'guardianName', 'guardianPhone', 'allergy'].forEach(k => m[k] = val(o, k));
+  m.depts = $$('[name=depts]:checked', f).map(x => x.value); m.isChild = isChild;
+  if (o.branchId && o.branchId !== (m.branchId || 'main')) {
+    if (prev) { m.history = [...(m.history || []), { date: today(), from: m.branchId || 'main', to: o.branchId }]; audit('Member transferred', `${fullName(m)}: ${branchName(m.branchId)} → ${branchName(o.branchId)}`); }
+    m.branchId = o.branchId;
+  }
+  if (m.status === 'First-timer' && !m.followUp) m.followUp = { stage: 'First visit', visited: m.joined || today(), due: addDays(m.joined || today(), 2), notes: [] };
+  if (prev && prev.status !== m.status && ['Deceased', 'Relocated'].includes(m.status)) audit('Member status changed', `${fullName(m)} → ${m.status}`);
+  if (!prev) { const lim = plan().limit; if (all('members').filter(x => !GONE.includes(x.status)).length >= lim) toast(`You’ve passed the ${plan().name} plan’s ${num(lim)}-member limit. Upgrade in Settings to stay within your plan.`, 'bad'); }
+  closeModal(); await put('members', m); toast(prev ? 'Changes saved' : `${fullName(m)} added`);
+};
+A.deleteMember = el => { const m = D.members[el.dataset.id]; if (!m) return; confirmBox('Delete this member?', `This removes <b>${esc(fullName(m))}</b> and their follow-up notes. Past giving and attendance totals stay. To keep their history, set their status to Relocated or Inactive instead.`, 'Delete member', async () => { S.sel.delete(m.id); await del('members', m.id); audit('Member deleted', fullName(m)); toast(`${fullName(m)} deleted`); }); };
+A.selMember = (el, e) => { const cb = el.querySelector('input'); if (e.target !== cb) cb.checked = !cb.checked; if (cb.checked) S.sel.add(el.dataset.id); else S.sel.delete(el.dataset.id); render(); };
+A.selAll = (el, e) => { const cb = el.querySelector('input'); if (e.target !== cb) cb.checked = !cb.checked; const ids = $$('td.sel-cell[data-id]').map(td => td.dataset.id); ids.forEach(id => cb.checked ? S.sel.add(id) : S.sel.delete(id)); render(); };
+A.clearSel = () => { S.sel.clear(); render(); };
+A.bulkDelete = () => {
+  const list = [...S.sel].map(id => D.members[id]).filter(Boolean); if (!list.length) return;
+  const names = list.slice(0, 5).map(m => esc(fullName(m))).join(', ') + (list.length > 5 ? ` and ${list.length - 5} more` : '');
+  confirmBox(`Delete ${list.length} member${list.length === 1 ? '' : 's'}?`, `This permanently removes <b>${names}</b> and their follow-up notes. Past giving and attendance totals stay. To keep someone’s history, set their status to Relocated or Inactive instead.`, `Delete ${list.length}`, async () => {
+    S.sel.clear(); toast(`Deleting ${list.length} members…`);
+    for (const m of list) await del('members', m.id);
+    audit('Members deleted', `${list.length}: ${list.map(fullName).slice(0, 10).join(', ')}${list.length > 10 ? '…' : ''}`); toast(`${list.length} member${list.length === 1 ? '' : 's'} deleted`);
+  });
+};
+A.statement = el => {
+  const m = D.members[el.dataset.id]; const st = ST(); const year = today().slice(0, 4);
+  const gifts = all('income').filter(i => i.memberId === m.id && (i.date || '').startsWith(year)).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  const t = `${st.name}\nGIVING STATEMENT, ${year}\n${fullName(m)}\n\n${gifts.map(g => `${fmtDate(g.date)}  ${g.category}  ${naira(g.amount)}`).join('\n')}\n\nTotal: ${naira(sum(gifts))}\n\nThank you for your faithful giving.`;
+  openModal('Giving statement', `<textarea class="input" id="st-text" rows="12" readonly>${esc(t)}</textarea>`, `<button class="btn" data-act="copyFrom" data-src="#st-text">${icon('copy', 15)} Copy</button>${waBtn(m.phone, t, 'Send on WhatsApp')}`);
+};
+A.exportMembers = () => {
+  const rows = [['First name', 'Surname', 'Phone', 'Gender', 'Status', 'Birthday', 'Anniversary', 'Departments', 'Household', 'Cell', 'Email', 'Address', 'Joined', 'Branch', 'Child', 'Allergy']];
+  members().sort((a, b) => fullName(a).localeCompare(fullName(b))).forEach(m => rows.push([m.first, m.last, m.phone, m.gender, m.status, m.dob, m.anniversary, (m.depts || []).join('; '), m.household, m.cell, m.email, m.address, m.joined, branchName(m.branchId), m.isChild ? 'Yes' : '', m.allergy]));
+  download(`members-${today()}.csv`, toCSV(rows));
+};
+let IMPORT = [];
+A.importMembers = () => {
+  if (!has('import')) return openModal('Import members', gate('import', 'Importing from Excel'));
+  openModal('Import members from Excel', `<p class="muted" style="margin:0">In Excel, save your list as <b>CSV</b>, then choose the file or paste its contents below. The first row must be column names, such as <i>First name, Surname, Phone, Gender, Birthday, Department</i>.</p>
+    <input type="file" id="imp-file" accept=".csv,text/csv" class="input"><textarea class="input" id="imp-text" rows="7" placeholder="First name,Surname,Phone,Gender&#10;Grace,Adeyemi,08031234567,Female"></textarea><div id="imp-sum"></div>`,
+    `<button class="btn" data-act="closeModal">Cancel</button><button class="btn primary" data-act="previewImport">Check file</button>`, { wide: true });
+};
+const COLMAP = { first: ['first name', 'firstname', 'first', 'given name', 'other names'], last: ['last name', 'surname', 'lastname', 'last', 'family name'], name: ['name', 'full name', 'fullname', 'member name'], phone: ['phone', 'phone number', 'mobile', 'telephone', 'gsm', 'whatsapp', 'phone no'], gender: ['gender', 'sex'], dob: ['dob', 'date of birth', 'birthday', 'birth date'], email: ['email', 'e-mail', 'email address'], address: ['address', 'home address'], depts: ['department', 'departments', 'unit', 'units'], status: ['status', 'membership status'], household: ['household', 'family'] };
+function normDate(s) { s = String(s || '').trim(); if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s; const m = s.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/); return m ? `${m[3]}-${pad(m[2])}-${pad(m[1])}` : ''; }
+A.previewImport = async () => {
+  const file = $('#imp-file').files[0]; let text = $('#imp-text').value;
+  if (file) text = await file.text();
+  const rows = parseCSV(text || ''); const out = $('#imp-sum');
+  if (rows.length < 2) { out.innerHTML = '<p class="err">Add a header row and at least one member.</p>'; return; }
+  const head = rows[0].map(h => h.trim().toLowerCase()); const idx = {};
+  Object.entries(COLMAP).forEach(([k, names]) => { const i = head.findIndex(h => names.includes(h)); if (i >= 0) idx[k] = i; });
+  if (idx.first === undefined && idx.name === undefined) { out.innerHTML = '<p class="err">We couldn’t find a name column. Name one column “First name” or “Name”.</p>'; return; }
+  const existing = new Set(all('members').map(m => intlPhone(m.phone)).filter(Boolean)); const st = ST();
+  IMPORT = []; let dups = 0;
+  rows.slice(1).forEach(r => {
+    const g = k => idx[k] === undefined ? '' : String(r[idx[k]] || '').trim();
+    let first = g('first'), last = g('last'); if (!first && g('name')) ({ first, last } = splitName(g('name')));
+    if (!first) return; const ph = intlPhone(g('phone')); if (ph && existing.has(ph)) { dups++; return; } if (ph) existing.add(ph);
+    const gen = g('gender').toLowerCase(); const stt = STATUSES.find(s => s.toLowerCase() === g('status').toLowerCase());
+    IMPORT.push({ first, last, phone: g('phone'), gender: gen.startsWith('m') ? 'Male' : gen.startsWith('f') ? 'Female' : '', dob: normDate(g('dob')), email: g('email'), address: g('address'), household: g('household'), status: stt || 'Member', depts: g('depts').split(/[;,/]/).map(x => x.trim()).filter(d => st.departments.includes(d)), joined: today(), branchId: curBranchId() });
+  });
+  out.innerHTML = `<div class="banner" style="margin:0"><span class="grow"><b>${IMPORT.length} members ready to import.</b>${dups ? ` ${dups} skipped because their phone number is already on record.` : ''} Columns found: ${Object.keys(idx).join(', ')}.</span>${IMPORT.length ? `<button class="btn primary sm" data-act="doImport">Import ${IMPORT.length}</button>` : ''}</div>`;
+};
+A.doImport = async () => {
+  const list = IMPORT; IMPORT = []; closeModal(); toast(`Importing ${list.length} members…`);
+  for (const m of list) await put('members', m);
+  audit('Members imported', `${list.length} records`); toast(`${list.length} members imported`);
+};
+
+/* ---------- Attendance ---------- */
+A.newService = () => serviceForm();
+A.editService = el => serviceForm(el.dataset.id);
+A.attMode = el => { const mode = el.dataset.mode; $('#att-mode').value = mode; $('#att-names').hidden = mode !== 'names'; $('#att-counts').hidden = mode !== 'count'; $$('.seg button', el.parentNode).forEach(b => b.classList.toggle('on', b === el)); };
+function updAttCount() { const c = $('#att-count'); if (c) c.textContent = $$('#att-list [name=present]:checked').length + ' present'; }
+A.attAddFT = async () => {
+  const nm = $('#ft-first').value.trim(); const ph = $('#ft-phone').value.trim(); if (!nm) return toast('Type the first-timer’s name.', 'bad');
+  const date = $('#att-date').value || today(); const { first, last } = splitName(nm);
+  const m = { id: uid(), first, last, phone: ph, status: 'First-timer', joined: date, branchId: curBranchId(), followUp: { stage: 'First visit', visited: date, due: addDays(date, 2), notes: [] } };
+  const list = $('#att-list'); const empty = list.querySelector('.empty'); if (empty) empty.remove();
+  list.insertAdjacentHTML('afterbegin', `<label class="check-row" data-name="${esc(nm.toLowerCase())}"><input type="checkbox" name="present" value="${esc(m.id)}" checked><span class="grow">${esc(nm)}</span>${pill('First-timer', 'gold')}</label>`);
+  $('#ft-first').value = ''; $('#ft-phone').value = ''; updAttCount(); toast(`${nm} added and marked present`);
+  await put('members', m);
+};
+F.service = async f => {
+  const o = formObj(f); if (!o.date) return formErr('Pick the service date.');
+  const prev = o.id ? D.services[o.id] : null; const s = prev ? clone(prev) : { id: uid(), branchId: curBranchId() };
+  s.date = o.date; s.type = o.type; s.mode = o.mode;
+  if (s.mode === 'names') {
+    const ids = $$('[name=present]:checked', f).map(x => x.value); if (!ids.length) return formErr('Tick at least one name, or switch to headcount.');
+    const ms = ids.map(id => D.members[id]).filter(Boolean);
+    s.present = ids; s.children = ms.filter(m => m.isChild).length; s.men = ms.filter(m => !m.isChild && m.gender === 'Male').length; s.women = ms.filter(m => !m.isChild && m.gender === 'Female').length;
+    s.firstTimers = ms.filter(m => m.status === 'First-timer' || (m.followUp && m.followUp.visited === s.date)).length; s.total = ids.length;
+  } else {
+    s.present = []; ['men', 'women', 'children', 'firstTimers'].forEach(k => s[k] = Math.max(0, parseInt(o[k], 10) || 0)); s.total = s.men + s.women + s.children;
+    if (!s.total) return formErr('Enter at least one count.');
+  }
+  const dup = all('services').find(x => x.id !== s.id && x.date === s.date && x.type === s.type && (x.branchId || 'main') === (s.branchId || 'main'));
+  if (dup) return formErr(`${s.type} on ${fmtDate(s.date)} is already recorded. Open it from the list to edit it.`);
+  closeModal(); await put('services', s); toast(`Attendance saved: ${num(s.total)} people`);
+};
+A.deleteService = el => { const s = D.services[el.dataset.id]; confirmBox('Delete this attendance record?', `${esc(s.type)} on ${fmtDate(s.date)} (${num(s.total)} people) will be removed.`, 'Delete', async () => { await del('services', s.id); toast('Attendance record deleted'); }); };
+A.markContacted = async el => { const m = clone(D.members[el.dataset.id]); m.lastContacted = today(); await put('members', m); toast(`Marked ${fullName(m)} as contacted`); };
+
+/* ---------- First-timers ---------- */
+A.newFirstTimer = () => firstTimerForm();
+A.openFT = el => ftModal(el.dataset.id);
+F.firsttimer = async f => {
+  const o = formObj(f); if (!val(o, 'first')) return formErr('Enter a first name.'); if (!val(o, 'phone')) return formErr('Enter a phone number for follow-up.');
+  const visited = o.visited || today();
+  const m = { id: uid(), first: val(o, 'first'), last: val(o, 'last'), phone: val(o, 'phone'), gender: o.gender || '', address: val(o, 'address'), status: 'First-timer', joined: visited, branchId: curBranchId(), depts: [],
+    followUp: { stage: 'First visit', visited, due: addDays(visited, 2), assignee: val(o, 'assignee'), invitedBy: val(o, 'invitedBy'), heardVia: o.heardVia || '', prayer: val(o, 'prayer'), notes: [] } };
+  closeModal(); await put('members', m); toast(`${fullName(m)} added. Follow-up due ${fmtShort(m.followUp.due)}.`);
+};
+function applyStage(m, stage) {
+  const f = m.followUp; if (f.stage === 'First visit' && stage !== 'First visit' && !f.contactedAt) f.contactedAt = today();
+  f.stage = stage; f.movedAt = today();
+  if (['Member', 'Department'].includes(stage)) { if (m.status === 'First-timer') m.status = 'Member'; f.due = ''; } else f.due = addDays(today(), stage === 'Contacted' ? 5 : 7);
+  f.notes = [...(f.notes || []), { date: today(), text: 'Moved to ' + stage, by: roleLabel() }];
+}
+A.ftNext = async el => { const m = clone(D.members[el.dataset.id]); const i = STAGES.indexOf(m.followUp.stage); const next = STAGES[Math.min(i + 1, STAGES.length - 1)]; applyStage(m, next); await put('members', m); toast(`${fullName(m)} moved to ${next}`); };
+F.followup = async f => {
+  const o = formObj(f); const m = clone(D.members[o.id]); const fu = m.followUp; const stageChanged = o.stage !== fu.stage;
+  if (stageChanged) applyStage(m, o.stage); else if (!['Member', 'Department'].includes(fu.stage)) fu.due = o.due || '';
+  fu.assignee = val(o, 'assignee');
+  if (o.dept && !(m.depts || []).includes(o.dept)) m.depts = [...(m.depts || []), o.dept];
+  if (val(o, 'note')) fu.notes = [...(fu.notes || []), { date: today(), text: val(o, 'note'), by: roleLabel() }];
+  if (val(o, 'note') && fu.stage === 'First visit') { fu.contactedAt = fu.contactedAt || today(); }
+  closeModal(); await put('members', m); toast('Follow-up saved');
+};
+
+/* ---------- Giving ---------- */
+A.gTab = el => { S.gTab = el.dataset.tab; render(); };
+A.newIncome = () => incomeForm();
+A.editIncome = el => incomeForm(el.dataset.id);
+F.income = async f => {
+  const o = formObj(f); const amt = money(o.amount); if (amt <= 0) return formErr('Enter the amount in naira.'); if (!o.date) return formErr('Pick a date.');
+  let mem = null; if (val(o, 'member')) { mem = all('members').find(m => fullName(m).toLowerCase() === val(o, 'member').toLowerCase()); if (!mem) return formErr(`No member called “${val(o, 'member')}”. Pick a name from the list, or leave it blank for a general collection.`); }
+  const prev = o.id ? D.income[o.id] : null; const i = prev ? clone(prev) : { id: uid(), branchId: curBranchId(), source: 'manual' };
+  Object.assign(i, { date: o.date, category: o.category, amount: amt, method: o.method, memberId: mem ? mem.id : '', note: val(o, 'note') });
+  closeModal(); await put('income', i);
+  audit(prev ? 'Giving record edited' : 'Giving recorded', `${i.category} ${naira(amt)} · ${mem ? fullName(mem) : 'general collection'}${prev && prev.amount !== amt ? ` (was ${naira(prev.amount)})` : ''}`);
+  toast(prev ? 'Giving record updated' : `${naira(amt)} ${i.category.toLowerCase()} recorded`);
+};
+A.deleteIncome = el => { const i = D.income[el.dataset.id]; confirmBox('Delete this giving record?', `${esc(i.category)} of ${naira(i.amount)} on ${fmtDate(i.date)}. This is recorded in the activity log.`, 'Delete', async () => { await del('income', i.id); audit('Giving record deleted', `${i.category} ${naira(i.amount)} on ${fmtDate(i.date)}`); toast('Giving record deleted'); }); };
+A.receipt = el => {
+  const i = D.income[el.dataset.id]; const m = D.members[i.memberId]; const st = ST();
+  const t = `${st.name}\nOFFICIAL RECEIPT  RCT-${i.id.slice(-6).toUpperCase()}\n\nReceived from: ${fullName(m)}\nAmount: ${naira(i.amount)}\nFor: ${i.category}\nDate: ${fmtDate(i.date)}\nMethod: ${i.method || 'Cash'}\n\nThank you for your faithful giving. God bless you.`;
+  openModal('Receipt', `<textarea class="input" id="rc-text" rows="11" readonly>${esc(t)}</textarea>`, `<button class="btn" data-act="copyFrom" data-src="#rc-text">${icon('copy', 15)} Copy</button>${waBtn(m && m.phone, t, 'Send on WhatsApp')}`);
+};
+A.newExpense = () => expenseForm();
+F.expense = async f => {
+  const o = formObj(f); const amt = money(o.amount); if (amt <= 0) return formErr('Enter the amount in naira.'); if (!val(o, 'desc')) return formErr('Say what the money is for.');
+  const e = { id: uid(), date: o.date || today(), category: o.category, amount: amt, desc: val(o, 'desc'), status: 'Pending', requestedBy: roleLabel(), branchId: curBranchId() };
+  closeModal(); await put('expenses', e); audit('Expense requested', `${e.category} ${naira(amt)} · ${e.desc}`); toast('Expense sent for approval');
+};
+A.decideExp = async el => { const e = clone(D.expenses[el.dataset.id]); e.status = el.dataset.d; e.decidedBy = roleLabel(); e.decidedAt = today(); await put('expenses', e); audit(`Expense ${e.status.toLowerCase()}`, `${e.category} ${naira(e.amount)} · ${e.desc}`); toast(`Expense ${e.status.toLowerCase()}`); };
+A.newCount = () => countForm();
+A.editCount = el => countForm(el.dataset.id);
+function recalcCount() {
+  const f = $('[data-form=count]'); if (!f) return; let t = 0;
+  DENOMS.forEach(d => { const n = parseInt(f.querySelector(`[name=d${d}]`).value, 10) || 0; t += n * d; const l = $('#dl-' + d); if (l) l.textContent = naira(n * d); });
+  t += money(f.querySelector('[name=coins]').value); $('#cnt-total').textContent = naira(t);
+}
+F.count = async f => {
+  const o = formObj(f); const denoms = {}; let total = 0;
+  DENOMS.forEach(d => { const n = parseInt(o['d' + d], 10) || 0; if (n) denoms[d] = n; total += n * d; });
+  const coins = money(o.coins); total += coins; if (total <= 0) return formErr('Enter how many of each note were counted.');
+  const counters = [0, 1, 2].map(k => ({ name: val(o, 'cn' + k), signed: !!o['cs' + k] && !!val(o, 'cn' + k) }));
+  const signed = counters.filter(c => c.signed).length;
+  const prev = o.id ? D.counts[o.id] : null; const c = prev ? clone(prev) : { id: uid(), branchId: curBranchId(), posted: false };
+  Object.assign(c, { date: o.date, service: o.service, category: o.category, denoms, coins, total, counters, status: signed >= 2 ? 'Verified' : 'Awaiting sign-off' });
+  closeModal(); await put('counts', c); audit('Offering count saved', `${c.service} ${fmtDate(c.date)}: ${naira(total)}, ${signed} signatures`);
+  toast(signed >= 2 ? 'Count verified. You can post it to income now.' : 'Count saved. It needs 2 counters to sign.');
+};
+A.deleteCount = el => { const c = D.counts[el.dataset.id]; confirmBox('Delete this count sheet?', `${esc(c.service)} on ${fmtDate(c.date)}, ${naira(c.total)}.`, 'Delete', async () => { await del('counts', c.id); audit('Count sheet deleted', `${c.service} ${fmtDate(c.date)} ${naira(c.total)}`); }); };
+A.postCount = async el => {
+  const c = clone(D.counts[el.dataset.id]); if (c.posted) return;
+  c.posted = true; await put('counts', c);
+  await put('income', { date: c.date, category: c.category, amount: c.total, method: 'Cash', note: `${c.service} count`, source: 'count', countId: c.id, branchId: c.branchId || 'main' });
+  audit('Count posted to income', `${c.category} ${naira(c.total)} from ${c.service} ${fmtDate(c.date)}`); toast(`${naira(c.total)} posted to income`);
+};
+
+/* ---------- Messages ---------- */
+let PREP = null;
+A.prepareMsgs = () => {
+  const aud = audience(S.cAud); const label = (audienceOptions().find(x => x[0] === S.cAud) || [0, 'Selected people'])[1]; const text = S.cText;
+  if (!text.trim()) return toast('Write a message first.', 'bad');
+  PREP = { label, text, count: aud.length, numbers: aud.map(m => m.phone || m.guardianPhone).join('\n') };
+  openModal(`Send to ${label}`, `<p class="muted" style="margin:0">${num(aud.length)} people. Each message is personalised. Tap WhatsApp to open each chat with the message ready.</p>
+    <div class="list">${aud.slice(0, 300).map(m => `<div class="row"><span class="grow">${who(m, esc(m.phone || m.guardianPhone))}</span>${waBtn(m.phone || m.guardianPhone, fillTpl(text, m))}</div>`).join('')}</div>`,
+    `<button class="btn left" data-act="copyNumbers">${icon('copy', 15)} Copy all numbers</button><button class="btn primary" data-act="logMsgs">Mark as sent</button>`, { wide: true, noFocus: true });
+};
+A.copyNumbers = () => PREP && copyText(PREP.numbers);
+A.logMsgs = async () => { if (!PREP) return; const p = PREP; PREP = null; closeModal(); await put('messages', { date: today(), audience: p.label, count: p.count, text: p.text, branchId: curBranchId() }); toast('Logged as sent'); };
+
+/* ---------- Children ---------- */
+A.checkInChild = () => checkInForm();
+F.checkin = async f => {
+  const o = formObj(f); let child = o.childId ? D.members[o.childId] : null;
+  if (!child && !val(o, 'childName')) return formErr('Pick a child, or type a new child’s name.');
+  if (!val(o, 'guardian')) return formErr('Enter who dropped the child off.');
+  if (!child) { const { first, last } = splitName(val(o, 'childName')); child = { id: uid(), first, last, isChild: true, status: 'Member', allergy: val(o, 'allergy'), guardianName: val(o, 'guardian'), guardianPhone: val(o, 'guardianPhone'), joined: today(), branchId: curBranchId(), depts: [] }; await put('members', child); }
+  const code = String(Math.floor(1000 + Math.random() * 9000));
+  const c = { date: today(), childId: child.id, childName: fullName(child), cls: o.cls, guardian: val(o, 'guardian'), guardianPhone: val(o, 'guardianPhone') || child.guardianPhone || '', code, inAt: new Date().toISOString(), branchId: curBranchId() };
+  await put('checkins', c);
+  const msg = `${ST().name} children’s church: ${fullName(child)} is checked in. Your pickup code is ${code}. Please show it when you collect ${child.first}.`;
+  openModal('Pickup code', `<div class="code-big" aria-label="Pickup code ${code}">${code}</div><p style="margin:0">Give this code to <b>${esc(c.guardian)}</b>. ${esc(child.first)} will be released only to someone who has it.</p>${child.allergy ? `<span class="pill warn">${icon('alert', 13)} ${esc(child.allergy)}: teachers will see this</span>` : ''}`,
+    `${waBtn(c.guardianPhone, msg, 'Send code on WhatsApp')}<button class="btn primary" data-act="closeModal">Done</button>`, { noFocus: true });
+};
+A.releaseChild = el => {
+  const c = D.checkins[el.dataset.id]; const k = D.members[c.childId] || { first: c.childName };
+  formModal('release', 'Release ' + fullName(k), `<input type="hidden" name="id" value="${esc(c.id)}"><div class="form-grid"><div class="field"><label for="rl-code">Pickup code</label><input class="input" id="rl-code" name="code" inputmode="numeric" maxlength="4" autocomplete="off" style="font-size:22px;letter-spacing:.2em"></div><div class="field"><label for="rl-by">Collected by</label><input class="input" id="rl-by" name="outBy" value="${esc(c.guardian || '')}"></div></div>`, 'Release child');
+};
+F.release = async f => {
+  const o = formObj(f); const c = D.checkins[o.id];
+  if (val(o, 'code') !== String(c.code)) return formErr('That code doesn’t match. Don’t release the child. Call a children’s church leader.');
+  const cc = clone(c); cc.outAt = new Date().toISOString(); cc.outBy = val(o, 'outBy') || c.guardian; closeModal(); await put('checkins', cc); toast(`${c.childName} released to ${cc.outBy}`);
+};
+
+/* ---------- Reports ---------- */
+A.period = el => { S.period = el.dataset.p; render(); };
+A.copySummary = () => copyText($('#wk-sum').value);
+A.exportAttendance = () => { const rows = [['Date', 'Service', 'Branch', 'Method', 'Men', 'Women', 'Children', 'First-timers', 'Total']]; all('services').filter(inBranch).sort(byDateDesc).forEach(s => rows.push([s.date, s.type, branchName(s.branchId), s.mode === 'names' ? 'Names' : 'Headcount', s.men, s.women, s.children, s.firstTimers, s.total])); download(`attendance-${today()}.csv`, toCSV(rows)); };
+A.exportIncome = () => { const rows = [['Date', 'Category', 'Member', 'Method', 'Amount (NGN)', 'Note', 'Branch']]; all('income').filter(inBranch).sort(byDateDesc).forEach(i => rows.push([i.date, i.category, i.memberId && D.members[i.memberId] ? fullName(D.members[i.memberId]) : '', i.method, i.amount, i.note, branchName(i.branchId)])); download(`income-${today()}.csv`, toCSV(rows)); };
+A.exportExpenses = () => { const rows = [['Date', 'Category', 'Description', 'Amount (NGN)', 'Status', 'Requested by', 'Decided by', 'Branch']]; all('expenses').filter(inBranch).sort(byDateDesc).forEach(e => rows.push([e.date, e.category, e.desc, e.amount, e.status, e.requestedBy, e.decidedBy, branchName(e.branchId)])); download(`expenses-${today()}.csv`, toCSV(rows)); };
+
+/* ---------- Branches ---------- */
+A.newBranch = () => branchForm();
+A.editBranch = el => { if (S.role === 'admin') branchForm(el.dataset.id); };
+F.branch = async f => {
+  const o = formObj(f); if (!val(o, 'name')) return formErr('Enter the branch name.');
+  if (o.id === 'main') { await saveSettings({ mainBranch: val(o, 'name'), address: val(o, 'location'), pastor: val(o, 'pastor') }); closeModal(); return toast('HQ details saved'); }
+  const prev = o.id ? D.branches[o.id] : null; const b = prev ? clone(prev) : { id: uid(), postings: [] };
+  if (val(o, 'pastor') && val(o, 'pastor') !== (prev ? prev.pastor : '')) { b.postings = [...(b.postings || []), { pastor: val(o, 'pastor'), date: today() }]; if (prev) audit('Pastor posted', `${val(o, 'pastor')} to ${val(o, 'name')}`); }
+  Object.assign(b, { name: val(o, 'name'), location: val(o, 'location'), pastor: val(o, 'pastor'), phone: val(o, 'phone') });
+  closeModal(); await put('branches', b); if (!prev) audit('Branch added', b.name); toast(prev ? 'Branch saved' : `${b.name} branch added`);
+};
+A.newRemit = () => { if (branches().length < 2) return toast('Add a branch first.', 'bad'); remitForm(); };
+F.remit = async f => {
+  const o = formObj(f); const amt = money(o.amount); if (amt <= 0) return formErr('Enter the amount paid.');
+  const r = { branchId: o.branchId, month: o.month || thisMonth(), amount: amt, date: o.date || today(), ref: val(o, 'ref') };
+  closeModal(); await put('remits', r); audit('Remittance recorded', `${branchName(r.branchId)} · ${monthLabel(r.month, true)} · ${naira(amt)}`); toast('Remittance recorded');
+};
+F.rates = async f => { const o = formObj(f); const rates = {}; ST().incomeCats.forEach(c => { const v = parseFloat(o[c]); if (v > 0) rates[c] = Math.min(100, v); }); await saveSettings({ remitRates: rates }); audit('Remittance rates changed', Object.entries(rates).map(([k, v]) => `${k} ${v}%`).join(', ')); toast('Rates saved'); };
+
+/* ---------- Event wiring ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if (!t) return; const fn = A[t.dataset.act]; if (!fn) return;
+  if (t.tagName === 'A' || t.tagName === 'BUTTON') e.preventDefault();
+  if (t.disabled) return; fn(t, e);
+});
+document.addEventListener('submit', async e => {
+  const f = e.target.closest('form[data-form]'); if (!f) return; e.preventDefault(); const fn = F[f.dataset.form]; if (!fn) return;
+  try { await fn(f); } catch (err) { console.error(err); formErr('Something went wrong saving this. Try again.'); }
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.id === 'att-q') { const q = el.value.trim().toLowerCase(); $$('#att-list .check-row').forEach(r => { r.hidden = !!q && !r.dataset.name.includes(q); }); return; }
+  if (el.dataset && el.dataset.denom !== undefined) { recalcCount(); return; }
+  const f = el.closest && el.closest('#mf'); if (f && f.dataset.dupOk && el.name === 'phone') delete f.dataset.dupOk;
+  if (!el.dataset || !el.dataset.ui || el.tagName === 'SELECT' || el.type === 'month') return;
+  S[el.dataset.ui] = el.value; if (el.hasAttribute('data-no-render')) return;
+  clearTimeout(qT); qT = setTimeout(render, 220);
+});
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.closest && el.closest('#att-list')) { updAttCount(); return; }
+  if (el.id === 'c-tpl') { S.cTpl = el.value; S.cText = ST().templates[el.value] || ''; const t = $('#c-text'); if (t) t.value = S.cText; return; }
+  if (el.id === 'ch-child') { const k = D.members[el.value]; $('#ch-new').hidden = !!el.value; if (k) { $('#ch-guard').value = k.guardianName || ''; $('#ch-gphone').value = k.guardianPhone || ''; } return; }
+  if (el.dataset && el.dataset.ui && (el.tagName === 'SELECT' || el.type === 'month')) {
+    S[el.dataset.ui] = el.value; if (el.dataset.ui === 'role' || el.dataset.ui === 'branch') closeModal();
+    render(); savePrefs();
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (!$('#modal-root').hidden) closeModal(); else if (S.navOpen) { S.navOpen = false; render(); } }
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.card[role=button]')) { e.preventDefault(); e.target.click(); }
+});
+
+/* ---------- Start ---------- */
+async function init() {
+  render();
+  let db = null;
+  if (typeof STORE !== 'undefined' && STORE) db = STORE;
+  else { try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { db = null; } }
+  if (db) {
+    DB = db; MODE = 'db'; const waiting = new Set(COLS);
+    const done = () => { if (!S.ready && waiting.size === 0) S.ready = true; scheduleRender(); };
+    COLS.forEach(c => {
+      try {
+        db.collection(c).onSnapshot(snap => {
+          const m = {}; snap.docs.forEach(d => { if (d.exists) m[d.id] = { ...d.data(), id: d.id }; }); D[c] = m; waiting.delete(c); done();
+        }, () => { waiting.delete(c); done(); toast('Live updates paused. Reload the page to reconnect.', 'bad'); });
+      } catch (e) { waiting.delete(c); }
+    });
+    setTimeout(() => { if (!S.ready) { S.ready = true; scheduleRender(); } }, 9000);
+  } else { MODE = 'local'; loadLocal(); S.ready = true; render(); }
+}
+init();
+</script>
