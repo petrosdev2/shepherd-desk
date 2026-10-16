@@ -922,9 +922,11 @@ V.signups = () => {
   const msg = `${ST().name}: please register with the church using this short form — it takes a minute. ${link}`;
   const card = s => {
     const dup = dupMemberFor(s);
+    const nk = (s.children || []).filter(c => (c.first || '').trim()).length;
     return `<div class="card" data-act="openSignup" data-id="${esc(s.id)}" role="button" tabindex="0">
       <div class="split"><div class="who">${avatar(s, 36)}<div style="min-width:0"><b>${esc([s.first, s.last].filter(Boolean).join(' '))}</b></div></div>${s.kind === 'new' ? pill('New / visiting', 'gold') : pill('Member', 'accent')}</div>
       <div class="meta">${esc(s.phone || 'No phone')}${s.dept ? ' · ' + esc(s.dept) : ''}${s.address ? ' · ' + esc(s.address) : ''}</div>
+      ${nk ? `<span class="pill accent">${icon('child', 13)} ${nk === 1 ? '1 child' : nk + ' children'}</span>` : ''}
       ${s.branchName ? `<div class="meta">${icon('branch', 13)} ${esc(s.branchName)}</div>` : ''}
       <div class="meta">Submitted ${fmtShort(s.date)}</div>
       ${dup ? `<span class="pill warn">${icon('alert', 13)} Same phone as ${esc(fullName(dup))}</span>` : ''}
@@ -1367,6 +1369,18 @@ function signupToMember(s) {
   if (isNew) m.followUp = { stage: 'First visit', visited: when, due: addDays(when, 2), assignee: '', invitedBy: s.invitedBy || '', heardVia: 'Registered online', prayer: '', notes: [] };
   return m;
 }
+const signupKids = s => (s.children || []).filter(c => (c.first || '').trim());
+function signupToChildren(s, parent) {
+  return signupKids(s).map(c => ({
+    id: uid(), first: (c.first || '').trim(), last: (c.last || '').trim() || parent.last || '',
+    gender: c.gender || '', dob: c.dob || '', allergy: c.allergy || '', photo: c.photo || '',
+    isChild: true, status: 'Member', phone: '', depts: [],
+    guardianName: fullName(parent), guardianPhone: parent.phone || '',
+    household: parent.household || '', address: parent.address || '',
+    joined: parent.joined || today(), branchId: parent.branchId || curBranchId(), source: 'self-registered'
+  }));
+}
+const kidsLine = n => n === 1 ? '1 child' : `${n} children`;
 A.openSignup = el => {
   const s = D.signups[el.dataset.id]; if (!s) return;
   const dup = dupMemberFor(s);
@@ -1384,6 +1398,11 @@ A.openSignup = el => {
     ${s.invitedBy ? `<dt>Invited by</dt><dd>${esc(s.invitedBy)}</dd>` : ''}
     ${s.branchName ? `<dt>Expression</dt><dd>${esc(s.branchName)}</dd>` : ''}
     <dt>Submitted</dt><dd>${fmtDate(s.date)}</dd></dl>
+    ${signupKids(s).length ? `<div class="lbl" style="margin:14px 0 2px">Children (${signupKids(s).length})</div><div class="list">${signupKids(s).map(c => {
+      const k = { first: c.first, last: c.last || s.last, photo: c.photo };
+      const bits = [c.gender, c.dob ? fmtDate(c.dob) : ''].filter(Boolean).join(' · ');
+      return `<div class="row"><span class="grow">${who(k, esc(bits))}</span>${c.allergy ? `<span class="pill warn">${icon('alert', 13)} ${esc(c.allergy)}</span>` : ''}</div>`;
+    }).join('')}</div>` : ''}
     ${dup ? `<div class="banner" style="margin:0">${icon('alert')}<span class="grow"><b>${esc(fullName(dup))}</b> already has this phone number. Merging fills in any blanks on that record instead of creating a second one.</span></div>` : ''}`;
   const foot = `<button class="btn danger left" data-act="rejectSignup" data-id="${esc(s.id)}">Reject</button>
     ${dup ? `<button class="btn" data-act="mergeSignup" data-id="${esc(s.id)}">Merge into existing</button>` : ''}
@@ -1394,17 +1413,25 @@ A.openSignup = el => {
 A.approveSignup = async el => {
   const s = D.signups[el.dataset.id]; if (!s) return;
   const m = signupToMember(s);
-  closeModal(); await put('members', m); await put('signups', { ...s, status: 'approved' });
-  audit('Registration approved', `${fullName(m)} (${m.status}${isMulti() ? ', ' + branchName(m.branchId) : ''})`);
-  toast(`${fullName(m)} added as ${m.status.toLowerCase()}${isMulti() ? ' at ' + branchName(m.branchId) : ''}`);
+  const kids = signupToChildren(s, m);
+  closeModal(); await put('members', m);
+  for (const k of kids) await put('members', k);
+  await put('signups', { ...s, status: 'approved' });
+  audit('Registration approved', `${fullName(m)} (${m.status}${kids.length ? ', with ' + kidsLine(kids.length) : ''}${isMulti() ? ', ' + branchName(m.branchId) : ''})`);
+  toast(`${fullName(m)} added as ${m.status.toLowerCase()}${kids.length ? ' with ' + kidsLine(kids.length) : ''}${isMulti() ? ' at ' + branchName(m.branchId) : ''}`);
 };
 A.mergeSignup = async el => {
   const s = D.signups[el.dataset.id]; const dup = s && dupMemberFor(s); if (!dup) return;
   const m = clone(dup); const add = signupToMember(s);
   ['last', 'gender', 'dob', 'address', 'occupation', 'marital', 'photo'].forEach(k => { if (!m[k] && add[k]) m[k] = add[k]; });
   if (s.dept && !(m.depts || []).includes(s.dept)) m.depts = [...(m.depts || []), s.dept];
-  closeModal(); await put('members', m); await put('signups', { ...s, status: 'approved' });
-  audit('Registration merged', `${fullName(m)}`); toast(`Merged into ${fullName(m)}`);
+  const known = new Set(members().filter(x => x.isChild).map(x => fullName(x).toLowerCase()));
+  const kids = signupToChildren(s, m).filter(k => !known.has(fullName(k).toLowerCase()));
+  closeModal(); await put('members', m);
+  for (const k of kids) await put('members', k);
+  await put('signups', { ...s, status: 'approved' });
+  audit('Registration merged', `${fullName(m)}${kids.length ? ' (+ ' + kidsLine(kids.length) + ')' : ''}`);
+  toast(`Merged into ${fullName(m)}${kids.length ? ', added ' + kidsLine(kids.length) : ''}`);
 };
 A.rejectSignup = el => {
   const s = D.signups[el.dataset.id]; if (!s) return;
