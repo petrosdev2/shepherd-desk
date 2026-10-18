@@ -20,6 +20,17 @@ self.addEventListener('activate', e => {
   );
 });
 
+// The page tells us which build assets it actually used, so the first visit
+// leaves behind everything a later offline open needs. Their names are
+// content-hashed, so a stale entry is impossible.
+self.addEventListener('message', e => {
+  const d = e.data;
+  if (!d || d.type !== 'precache' || !Array.isArray(d.urls)) return;
+  e.waitUntil(caches.open(CACHE).then(c => Promise.all(
+    d.urls.slice(0, 120).map(u => c.match(u).then(hit => hit || c.add(u).catch(() => {})))
+  )));
+});
+
 const cacheable = url =>
   url.origin === self.location.origin &&
   !url.pathname.startsWith('/join/') &&
