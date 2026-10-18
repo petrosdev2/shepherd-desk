@@ -9,7 +9,15 @@ let appStarted = false; // the app owns #app directly; never start it twice
 export default function Home() {
   const [stage, setStage] = useState('boot'); // boot | no-env | signed-out | onboarding | app
   const [session, setSession] = useState(null);
+  const [conn, setConn] = useState(null);     // { online, fresh, pending } once the store is up
   const started = useRef(false);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+    const reg = () => navigator.serviceWorker.register('/sw.js').catch(e => console.error('Offline mode unavailable', e));
+    if (document.readyState === 'complete') reg();
+    else window.addEventListener('load', reg, { once: true });
+  }, []);
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -29,6 +37,7 @@ export default function Home() {
       const { data: church } = await supabase.from('churches').select('name, join_code, form_token').eq('id', profile.church_id).maybeSingle();
       if (!active) return;
       const store = createStore({ supabase, churchId: profile.church_id, user: s.user, profile, church, onSignOut: () => window.location.reload() });
+      store.onStatus(setConn);
       window.__QR = async text => (await import('qrcode')).toDataURL(text, { width: 440, margin: 1, color: { dark: '#0B6E4F', light: '#FFFFFF' } });
       setTimeout(() => startApp(store), 0);
     };
@@ -48,7 +57,36 @@ export default function Home() {
       <div id="app" />
       <div id="modal-root" hidden />
       <div id="toasts" aria-live="polite" />
+      <ConnectionBar conn={conn} />
     </>
+  );
+}
+
+// Sits out of the way until something is worth saying: you are offline, or
+// there are saved changes still to go up.
+function ConnectionBar({ conn }) {
+  if (!conn) return null;
+  const { online, pending } = conn;
+  if (online && !pending) return null;
+  const msg = !online
+    ? (pending ? `Offline — ${pending} change${pending === 1 ? '' : 's'} saved on this phone` : 'Offline — your records are the last saved copy')
+    : `Sending ${pending} saved change${pending === 1 ? '' : 's'}…`;
+  return (
+    <div role="status" aria-live="polite" style={{
+      position: 'fixed', left: '50%', transform: 'translateX(-50%)',
+      bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))', zIndex: 60,
+      display: 'flex', alignItems: 'center', gap: 8,
+      padding: '9px 15px', borderRadius: 999, maxWidth: 'calc(100vw - 32px)',
+      background: online ? '#0B6E4F' : '#4a3a12', color: '#fff',
+      font: '500 13px/1.3 ui-sans-serif, system-ui, sans-serif',
+      boxShadow: '0 6px 20px rgba(0,0,0,.35)'
+    }}>
+      <span aria-hidden="true" style={{
+        width: 8, height: 8, borderRadius: '50%', flex: 'none',
+        background: online ? '#9ff0cd' : '#f2c14e'
+      }} />
+      <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{msg}</span>
+    </div>
   );
 }
 
