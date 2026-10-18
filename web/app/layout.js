@@ -3,10 +3,13 @@ import './reset.css';
 
 export const metadata = {
   title: 'Shepherd Desk',
-  description: 'Church management for Nigerian churches: members, attendance, follow-up, giving, children’s check-in and branches.'
+  description: 'Church management for Nigerian churches: members, attendance, follow-up, giving, children’s check-in and branches.',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: { capable: true, title: 'Shepherd Desk', statusBarStyle: 'black-translucent' },
+  icons: { icon: '/icon.svg', apple: '/icon.svg' }
 };
 
-export const viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover' };
+export const viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#0B6E4F' };
 
 export default function RootLayout({ children }) {
   return (
