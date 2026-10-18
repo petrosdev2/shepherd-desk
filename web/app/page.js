@@ -14,7 +14,20 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
-    const reg = () => navigator.serviceWorker.register('/sw.js').catch(e => console.error('Offline mode unavailable', e));
+    // Hand the worker the exact build assets this page used, so the first
+    // visit is enough to open the app again with no network at all.
+    const precache = () => {
+      const sw = navigator.serviceWorker.controller;
+      if (!sw) return;
+      const urls = performance.getEntriesByType('resource')
+        .map(e => e.name)
+        .filter(u => u.startsWith(window.location.origin) && (u.includes('/_next/static/') || u.endsWith('/manifest.webmanifest') || u.endsWith('/icon.svg')));
+      if (urls.length) sw.postMessage({ type: 'precache', urls });
+    };
+    const reg = () => navigator.serviceWorker.register('/sw.js')
+      .then(() => navigator.serviceWorker.ready)
+      .then(() => { precache(); navigator.serviceWorker.addEventListener('controllerchange', precache); })
+      .catch(e => console.error('Offline mode unavailable', e));
     if (document.readyState === 'complete') reg();
     else window.addEventListener('load', reg, { once: true });
   }, []);
