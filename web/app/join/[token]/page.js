@@ -11,6 +11,11 @@ const BLANK = { kind: 'member', first: '', last: '', phone: '', gender: '', dob:
 const BLANK_KID = { first: '', last: '', gender: '', dob: '', allergy: '', photo: '' };
 const MAX_KIDS = 8;
 
+// Set here rather than leaning on the app stylesheet: this page is public and
+// should look right even if the app's CSS changes underneath it.
+const PICK = { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' };
+const HIDDEN = { display: 'none' };
+
 // Shrink in the browser so a phone photo uploads in seconds on mobile data.
 function shrink(file, max = 640) {
   return new Promise((resolve, reject) => {
@@ -141,7 +146,7 @@ export default function Join({ params }) {
         ) : null}
         <div className="field">
           <span className="lbl">Your photo</span>
-          <div className="photo-pick">
+          <div className="photo-pick" style={PICK}>
             <Face src={shot} name={f.first} last={f.last} size={64} />
             <div>
               <button type="button" className="btn" onClick={() => fileRef.current && fileRef.current.click()}>
@@ -149,7 +154,7 @@ export default function Join({ params }) {
               </button>
               <p className="note" style={{ margin: '6px 0 0' }}>Optional. It helps the pastors and unit heads put a face to your name.</p>
             </div>
-            <input ref={fileRef} type="file" accept="image/*" onChange={e => pickPhoto(e, null)} />
+            <input ref={fileRef} style={HIDDEN} type="file" accept="image/*" onChange={e => pickPhoto(e, null)} />
           </div>
         </div>
         <div className="form-grid">
@@ -181,14 +186,14 @@ export default function Join({ params }) {
                 <b>Child {i + 1}</b>
                 <button type="button" className="btn sm danger" onClick={() => dropKid(i)}>Remove</button>
               </div>
-              <div className="photo-pick">
+              <div className="photo-pick" style={PICK}>
                 <Face src={kidShots[i]} name={k.first} last={k.last || f.last} size={52} />
                 <div>
                   <button type="button" className="btn sm" onClick={() => { const el = document.getElementById('kid-photo-' + i); if (el) el.click(); }}>
                     {kidShots[i] ? 'Change photo' : 'Add a photo'}
                   </button>
                 </div>
-                <input id={'kid-photo-' + i} type="file" accept="image/*" onChange={e => pickPhoto(e, i)} />
+                <input id={'kid-photo-' + i} style={HIDDEN} type="file" accept="image/*" onChange={e => pickPhoto(e, i)} />
               </div>
               <div className="form-grid">
                 <div className="field"><label htmlFor={'k-first-' + i}>First name *</label><input className="input" id={'k-first-' + i} value={k.first} onChange={e => setKid(i, 'first', e.target.value)} /></div>
